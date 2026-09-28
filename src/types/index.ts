@@ -2,4 +2,4 @@
  * Tipos e interfaces TypeScript compartidos.
  */
 
-export {};
+export * from './financial';

@@ -1,6 +1,5 @@
 /**
- * Constantes (periodicidades, categorías, colores).
+ * Constantes globales (colores, temas, tokens).
  */
 
-export { };
-
+export * from './theme';

@@ -1,5 +1,5 @@
 /**
- * Conversión de tasas (Fase 1).
+ * Módulo de Conversión de Tasas.
  */
 
-export {};
+export * from './rateConverter';

@@ -1,5 +1,5 @@
 /**
- * Lógica financiera PURA (sin UI, sin red).
+ * Motor Financiero Puro (cero dependencias de React/Supabase).
  */
 
 export * from './interest';

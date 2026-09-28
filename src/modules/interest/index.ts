@@ -1,5 +1,6 @@
 /**
- * Interés simple y compuesto (Fase 1).
+ * Módulo de Interés Simple y Compuesto.
  */
 
-export {};
+export * from './simpleInterest';
+export * from './compoundInterest';
