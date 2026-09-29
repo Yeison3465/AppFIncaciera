@@ -15,6 +15,7 @@ interface PrimaryButtonProps {
   onPress: () => void;
   iconName?: keyof typeof Ionicons.glyphMap;
   iconPosition?: 'left' | 'right';
+  iconColor?: string;
   loading?: boolean;
   disabled?: boolean;
   style?: ViewStyle;
@@ -31,6 +32,7 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
   onPress,
   iconName = 'arrow-forward',
   iconPosition = 'right',
+  iconColor,
   loading = false,
   disabled = false,
   style,
@@ -52,7 +54,7 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
             <Ionicons
               name={iconName}
               size={18}
-              color={AURA_COLORS.textPrimary}
+              color={iconColor ?? AURA_COLORS.textPrimary}
               style={{ marginRight: 8 }}
             />
           )}
@@ -66,7 +68,7 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
             <Ionicons
               name={iconName}
               size={18}
-              color={AURA_COLORS.textPrimary}
+              color={iconColor ?? AURA_COLORS.textPrimary}
               style={{ marginLeft: 8 }}
             />
           )}

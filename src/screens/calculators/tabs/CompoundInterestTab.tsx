@@ -1,15 +1,14 @@
-import React, { useState, useMemo } from 'react';
-import { View, Text, TouchableOpacity, Switch } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { AURA_COLORS } from '../../../constants/theme';
+import React, { useMemo, useState } from 'react';
+import { Switch, Text, TouchableOpacity, View } from 'react-native';
 import {
+  ChartDataPoint,
+  FinancialAreaChart,
+  FinancialStepper,
   PrimaryButton,
   SecondaryButton,
-  FinancialStepper,
-  InfoBanner,
-  FinancialAreaChart,
-  ChartDataPoint,
 } from '../../../components';
+import { AURA_COLORS } from '../../../constants/theme';
 import { calculateCompoundInterest } from '../../../modules';
 import { CompoundingFrequency, TimeUnit } from '../../../types/financial';
 
@@ -88,8 +87,8 @@ const CompoundInterestTabComponent: React.FC<CompoundInterestTabProps> = ({ onCa
           periodLabel: compoundTermUnit === 'years'
             ? `Año ${item.year}`
             : compoundTermUnit === 'months'
-            ? `Mes ${item.period}`
-            : `Periodo ${item.period}`,
+              ? `Mes ${item.period}`
+              : `Periodo ${item.period}`,
         });
       });
     } else {
@@ -123,7 +122,10 @@ const CompoundInterestTabComponent: React.FC<CompoundInterestTabProps> = ({ onCa
       {/* HERO CARD INTERÉS COMPUESTO */}
       <View className="bg-white rounded-3xl p-5 my-2.5 border border-gray-100">
         <View className="flex-row justify-between items-center mb-3">
-          <Text className="text-[11px] font-bold text-textMuted tracking-wider">
+          <Text
+            className="text-base font-semibold text-textMutedDark tracking-wider"
+            style={{ letterSpacing: 1.2 }}
+          >
             VALOR FUTURO ESTIMADO
           </Text>
           <View className="flex-row items-center gap-1 bg-emerald-100 px-2 py-0.5 rounded-md">
@@ -211,14 +213,12 @@ const CompoundInterestTabComponent: React.FC<CompoundInterestTabProps> = ({ onCa
                 <TouchableOpacity
                   key={freq}
                   onPress={() => setCompoundFrequency(freq)}
-                  className={`flex-1 py-2 items-center justify-center rounded-lg ${
-                    isSel ? 'bg-obsidian' : 'bg-transparent'
-                  }`}
+                  className={`flex-1 py-2 items-center justify-center rounded-lg ${isSel ? 'bg-obsidian' : 'bg-transparent'
+                    }`}
                 >
                   <Text
-                    className={`text-[11px] font-bold ${
-                      isSel ? 'text-white' : 'text-textDark'
-                    }`}
+                    className={`text-[11px] font-bold ${isSel ? 'text-white' : 'text-textDark'
+                      }`}
                     numberOfLines={1}
                   >
                     {labels[freq]}
@@ -309,16 +309,14 @@ const CompoundInterestTabComponent: React.FC<CompoundInterestTabProps> = ({ onCa
                   <TouchableOpacity
                     key={unit}
                     onPress={() => setCompoundTermUnit(unit)}
-                    className={`flex-1 py-1.5 items-center justify-center rounded-lg border ${
-                      isSel
+                    className={`flex-1 py-1.5 items-center justify-center rounded-lg border ${isSel
                         ? 'bg-obsidian border-obsidian'
                         : 'bg-gray-50 border-gray-200'
-                    }`}
+                      }`}
                   >
                     <Text
-                      className={`text-xs font-bold ${
-                        isSel ? 'text-white' : 'text-textDark'
-                      }`}
+                      className={`text-xs font-bold ${isSel ? 'text-white' : 'text-textDark'
+                        }`}
                     >
                       {labels[unit]}
                     </Text>
@@ -330,18 +328,26 @@ const CompoundInterestTabComponent: React.FC<CompoundInterestTabProps> = ({ onCa
         </View>
       </View>
 
-      {/* INFO BANNER EFECTO BOLA DE NIEVE */}
-      <InfoBanner
-        title="Efecto Bola de Nieve"
-        description={`En un plazo de ${compoundTerm} ${unitLabel.toLowerCase()} al ${compoundRateEA}%, tus intereses generados representan el ${compoundResult.totalReturnPercentage.toFixed(0)}% del capital que aportaste. El tiempo y la reinversión son la clave.`}
-      />
+      {/* BLOQUE: EFECTO BOLA DE NIEVE */}
+      <View className="bg-gray-100 rounded-2xl p-4 my-2.5 flex-row items-start">
+        <View className="w-10 h-10 rounded-full bg-[#FEEBC8] items-center justify-center mr-3.5 mt-0.5">
+          <Ionicons name="bulb" size={20} color="#F59E0B" />
+        </View>
+        <View className="flex-1">
+          <Text className="text-[15px] font-bold text-textDark mb-1">Efecto Bola de Nieve</Text>
+          <Text className="text-xs text-gray-600 leading-[19px] font-normal">
+            {`En un plazo de ${compoundTerm} ${unitLabel.toLowerCase()} al ${compoundRateEA}%, tus intereses generados superan el ${compoundResult.totalReturnPercentage.toFixed(0)}% del capital que aportaste. El tiempo es el factor exponencial clave.`}
+          </Text>
+        </View>
+      </View>
 
       {/* BOTONES DE ACCIÓN */}
       <View className="mt-2 gap-2.5">
         <PrimaryButton
-          title="Calcular Proyección"
-          iconName="arrow-up-circle-outline"
+          title="Recalcular Proyección"
+          iconName="sync"
           iconPosition="left"
+          iconColor={AURA_COLORS.amberGold}
           onPress={() => onCalculate?.()}
         />
         <View className="flex-row gap-2">
@@ -354,7 +360,7 @@ const CompoundInterestTabComponent: React.FC<CompoundInterestTabProps> = ({ onCa
           <SecondaryButton
             title="Compartir Reporte"
             iconName="share-outline"
-            onPress={() => {}}
+            onPress={() => { }}
             style={{ flex: 1 }}
           />
         </View>
