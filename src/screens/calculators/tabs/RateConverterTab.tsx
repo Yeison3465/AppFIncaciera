@@ -201,7 +201,7 @@ const RateConverterTabComponent: React.FC<RateConverterTabProps> = ({ onCalculat
         {/* Periodicidad Base */}
         <View className="my-2">
           <Text className="text-xs font-semibold text-textDark mb-1.5">Periodicidad Base</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="py-1">
+          <ScrollView horizontal nestedScrollEnabled showsHorizontalScrollIndicator={false} className="py-1">
             {periodicities.map(({ key, label }) => {
               const isSel = rateSourcePeriodicity === key;
               return (
@@ -307,7 +307,7 @@ const RateConverterTabComponent: React.FC<RateConverterTabProps> = ({ onCalculat
         {/* Periodicidad Destino */}
         <View className="my-2">
           <Text className="text-xs font-semibold text-textDark mb-1.5">Periodicidad de Capitalización</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="py-1">
+          <ScrollView horizontal nestedScrollEnabled showsHorizontalScrollIndicator={false} className="py-1">
             {periodicities.map(({ key, label }) => {
               const isSel = rateTargetPeriodicity === key;
               return (

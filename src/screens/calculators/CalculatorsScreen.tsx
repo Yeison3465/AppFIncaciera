@@ -136,8 +136,13 @@ export const CalculatorsScreen: React.FC = () => {
       {/* CONTENIDO PRINCIPAL PERSISTENTE (Keep-Alive) */}
       <ScrollView
         ref={scrollViewRef}
+        className="flex-1"
+        style={{ flex: 1 }}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 12 }}
+        scrollEventThrottle={16}
+        nestedScrollEnabled={true}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 12, paddingBottom: 24 }}
       >
         <View style={{ display: activeCalcTab === 'compound' ? 'flex' : 'none' }}>
           <CompoundInterestTab onCalculate={handleScrollToTop} />
@@ -150,9 +155,6 @@ export const CalculatorsScreen: React.FC = () => {
         <View style={{ display: activeCalcTab === 'rates' ? 'flex' : 'none' }}>
           <RateConverterTab onCalculate={handleScrollToTop} />
         </View>
-
-        {/* Espacio para que el scroll supere el FloatingIslandTabBar */}
-        <View style={{ height: bottomInset + 80 }} />
       </ScrollView>
 
       {/* DOCK FLOTANTE INFERIOR */}

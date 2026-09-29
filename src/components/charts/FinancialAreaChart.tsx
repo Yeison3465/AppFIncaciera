@@ -137,8 +137,13 @@ export const FinancialAreaChart: React.FC<FinancialAreaChartProps> = ({
       </View>
 
       {/* ÁREA DE GRÁFICA CON GIFTED CHARTS */}
-      <View className="overflow-hidden items-center justify-center">
+      <View
+        className="overflow-hidden items-center justify-center"
+        style={{ touchAction: 'pan-y' }}
+      >
         <LineChart
+          disableScroll={true}
+          nestedScrollEnabled={true}
           areaChart
           curved={line1Data.length > 2}
           data={line1Data}
@@ -183,7 +188,7 @@ export const FinancialAreaChart: React.FC<FinancialAreaChartProps> = ({
           focusEnabled={false}
           dataPointsColor={primaryColor}
           dataPointsRadius={3.5}
-          // Pointer interactivo al tocar
+          // Pointer interactivo al tocar (long press para no secuestrar el scroll vertical)
           pointerConfig={{
             pointerStripColor: '#D1D5DB',
             pointerStripWidth: 1.5,
@@ -193,7 +198,7 @@ export const FinancialAreaChart: React.FC<FinancialAreaChartProps> = ({
             autoAdjustPointerLabelPosition: true,
             pointerLabelWidth: 120,
             pointerLabelHeight: 52,
-            activatePointersOnLongPress: false,
+            activatePointersOnLongPress: true,
             pointerLabelComponent: (items: any) => {
               const item = items?.[0];
               if (!item) return null;
@@ -218,7 +223,7 @@ export const FinancialAreaChart: React.FC<FinancialAreaChartProps> = ({
         />
       </View>
       <Text className="text-[10px] text-center text-textMuted mt-1">
-        Toca o desliza sobre la curva para explorar la evolución temporal
+        Mantén presionado sobre la curva para explorar la evolución temporal
       </Text>
     </View>
   );
