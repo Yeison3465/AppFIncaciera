@@ -174,3 +174,24 @@ Como agente de diseño e interfaz:
 3. **NO omitir estados de feedback:** Ningún formulario o pantalla puede pasar a producción sin prever visualmente el estado de carga (`LoadingState` / `Skeleton`) y la interfaz de error (`ErrorBanner` o `ErrorScreenState`).
 4. **Respetar Safe Areas:** Todo ensamblaje de pantalla utiliza `SafeAreaView` o hooks de insets para evitar solapamientos con la barra de estado y con el `FloatingIslandTabBar` suspendido.
 5. **Alineación con el Roadmap:** Solo ensamblar interfaces cuyas entidades de negocio pertenezcan a la fase en desarrollo o a fases previas ya concluidas.
+
+## Stack de UI
+
+FinanzasApp utiliza Tailwind CSS adaptado a React Native para la construcción de interfaces.
+
+Tecnologías:
+
+- React Native
+- Expo
+- TypeScript
+- Expo Router
+- Tailwind para React Native
+
+Reglas:
+
+- Utilizar las clases de Tailwind para estilos siempre que sea posible.
+- Evitar crear StyleSheet manuales cuando Tailwind pueda resolver el estilo.
+- Mantener los estilos visuales consistentes con el Design System de FinanzasApp.
+- No introducir otra solución de styling sin justificarla.
+- Los estilos dinámicos o casos que Tailwind no pueda resolver adecuadamente pueden utilizar APIs de React Native.
+- No mezclar arbitrariamente diferentes sistemas de estilos dentro del mismo componente.

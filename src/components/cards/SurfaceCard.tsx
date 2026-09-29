@@ -1,6 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, ViewStyle } from 'react-native';
-import { AURA_COLORS } from '../../constants/theme';
+import { View, ViewStyle } from 'react-native';
 
 interface SurfaceCardProps {
   children: React.ReactNode;
@@ -10,50 +9,27 @@ interface SurfaceCardProps {
 
 /**
  * Tarjeta de Superficie (SurfaceCard) - Aura Financial V2.5
- * Contenedor base modular con radio 16-20px y sombras suaves.
+ * Contenedor base modular con radio 20px.
+ * Implementado con Tailwind CSS / NativeWind seguro contra race conditions.
  */
 export const SurfaceCard: React.FC<SurfaceCardProps> = ({
   children,
   variant = 'light',
   style,
 }) => {
+  const variantClass =
+    variant === 'dark'
+      ? 'bg-darkCard border-borderSubtle'
+      : variant === 'outline'
+      ? 'bg-transparent border-borderLight'
+      : 'bg-cardWhite border-[#F0F0F2]';
+
   return (
     <View
-      style={[
-        styles.card,
-        variant === 'dark' && styles.darkCard,
-        variant === 'outline' && styles.outlineCard,
-        style,
-      ]}
+      className={`rounded-[20px] p-[18px] my-2 border ${variantClass}`}
+      style={style}
     >
       {children}
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 18,
-    marginVertical: 8,
-    borderWidth: 1,
-    borderColor: '#F0F0F2',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  darkCard: {
-    backgroundColor: AURA_COLORS.darkCard,
-    borderColor: AURA_COLORS.borderSubtle,
-    shadowOpacity: 0.2,
-  },
-  outlineCard: {
-    backgroundColor: 'transparent',
-    borderColor: AURA_COLORS.borderLight,
-    shadowOpacity: 0,
-    elevation: 0,
-  },
-});

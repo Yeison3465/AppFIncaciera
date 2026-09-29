@@ -54,12 +54,14 @@ export interface SimpleInterestResult {
 // RF-05: INTERÉS COMPUESTO
 // ==========================================
 
-export type CompoundingFrequency = 'monthly' | 'quarterly' | 'annual';
+export type CompoundingFrequency = 'daily' | 'monthly' | 'quarterly' | 'annual';
 
 export interface CompoundInterestInput {
   initialDeposit: number; // Depósito Inicial (VP)
   annualEffectiveRate: number; // Tasa Anual E.A. (%)
-  termYears: number; // Horizonte en Años (n)
+  termYears?: number; // Horizonte en Años (n) [compatibilidad retroactiva]
+  term?: number; // Plazo o Periodo
+  termUnit?: TimeUnit; // Unidad: Años, Meses, Días
   compoundingFrequency: CompoundingFrequency; // Frecuencia de capitalización
   periodicDeposit: number; // Aporte periódico (ej. mensual)
   includePeriodicDeposit: boolean; // Si se incluye o no el aporte

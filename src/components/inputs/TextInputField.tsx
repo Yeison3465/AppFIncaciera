@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TextInput,
-  StyleSheet,
   ViewStyle,
   TextInputProps,
   TouchableOpacity,
@@ -22,6 +21,7 @@ interface TextInputFieldProps extends TextInputProps {
 
 /**
  * Input de Texto Aura (Floating/Inset Label) - Aura Financial V2.5
+ * Implementado con Tailwind CSS / NativeWind.
  */
 export const TextInputField: React.FC<TextInputFieldProps> = ({
   label,
@@ -35,19 +35,29 @@ export const TextInputField: React.FC<TextInputFieldProps> = ({
   const hasError = !!error;
 
   return (
-    <View style={[styles.wrapper, containerStyle]}>
+    <View className="my-1.5" style={containerStyle}>
       <View
-        style={[
-          styles.container,
-          hasError && styles.errorContainer,
-          isValid && !hasError && styles.validContainer,
-        ]}
+        className={`min-h-[58px] rounded-[14px] bg-white border-[1.2px] px-4 py-2 flex-row items-center ${
+          hasError
+            ? 'bg-redAlertLight border-redAlert'
+            : isValid
+            ? 'border-emeraldGreen'
+            : 'border-borderLight'
+        }`}
       >
-        <View style={styles.inputArea}>
-          <Text style={[styles.label, hasError && styles.errorLabel]}>{label.toUpperCase()}</Text>
+        <View className="flex-1 justify-center">
+          <Text
+            className={`text-[10px] font-bold tracking-wider mb-0.5 ${
+              hasError ? 'text-redAlert' : 'text-textMutedDark'
+            }`}
+          >
+            {label.toUpperCase()}
+          </Text>
           <TextInput
             placeholderTextColor={AURA_COLORS.textMuted}
-            style={[styles.input, hasError && styles.errorInput]}
+            className={`text-[15px] font-semibold py-0 ${
+              hasError ? 'text-redAlert' : 'text-textDark'
+            }`}
             {...inputProps}
           />
         </View>
@@ -57,7 +67,7 @@ export const TextInputField: React.FC<TextInputFieldProps> = ({
             name="checkmark-circle"
             size={20}
             color={AURA_COLORS.emeraldGreen}
-            style={styles.statusIcon}
+            style={{ marginLeft: 8 }}
           />
         )}
 
@@ -66,79 +76,20 @@ export const TextInputField: React.FC<TextInputFieldProps> = ({
             name="alert-circle"
             size={20}
             color={AURA_COLORS.redAlert}
-            style={styles.statusIcon}
+            style={{ marginLeft: 8 }}
           />
         )}
 
         {rightIcon && !hasError && !isValid && (
-          <TouchableOpacity onPress={onRightIconPress} style={styles.iconButton}>
+          <TouchableOpacity onPress={onRightIconPress} className="p-1 ml-1">
             <Ionicons name={rightIcon} size={20} color={AURA_COLORS.textMuted} />
           </TouchableOpacity>
         )}
       </View>
 
-      {hasError && <Text style={styles.errorText}>{error}</Text>}
+      {hasError && (
+        <Text className="text-redAlert text-xs mt-1 ml-1.5 font-medium">{error}</Text>
+      )}
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  wrapper: {
-    marginVertical: 6,
-  },
-  container: {
-    minHeight: 58,
-    borderRadius: 14,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1.2,
-    borderColor: AURA_COLORS.borderLight,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  errorContainer: {
-    backgroundColor: AURA_COLORS.redAlertLight,
-    borderColor: AURA_COLORS.redAlert,
-  },
-  validContainer: {
-    borderColor: AURA_COLORS.emeraldGreen,
-  },
-  inputArea: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  label: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: AURA_COLORS.textMutedDark,
-    letterSpacing: 0.5,
-    marginBottom: 2,
-  },
-  errorLabel: {
-    color: AURA_COLORS.redAlert,
-  },
-  input: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: AURA_COLORS.textDark,
-    paddingVertical: 0,
-  },
-  errorInput: {
-    color: AURA_COLORS.redAlert,
-  },
-  statusIcon: {
-    marginLeft: 8,
-  },
-  iconButton: {
-    padding: 4,
-    marginLeft: 4,
-  },
-  errorText: {
-    color: AURA_COLORS.redAlert,
-    fontSize: 12,
-    marginTop: 4,
-    marginLeft: 6,
-    fontWeight: '500',
-  },
-});

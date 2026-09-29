@@ -1,7 +1,6 @@
 import React from 'react';
 import {
   TouchableOpacity,
-  StyleSheet,
   ViewStyle,
   Text,
   View,
@@ -21,6 +20,7 @@ interface IconButtonProps {
 
 /**
  * Botón Circular de Acción Rápida (FAB / Quick Action) - Aura Financial V2.5
+ * Implementado con Tailwind CSS / NativeWind seguro contra race conditions.
  */
 export const IconButton: React.FC<IconButtonProps> = ({
   iconName,
@@ -61,57 +61,32 @@ export const IconButton: React.FC<IconButtonProps> = ({
   const isOutline = variant === 'outline';
 
   return (
-    <View style={styles.wrapper}>
+    <View className="items-center">
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={onPress}
         disabled={disabled}
+        className={`items-center justify-center ${
+          isOutline ? 'border border-borderLight' : ''
+        }`}
         style={[
-          styles.circle,
           {
             width: size,
             height: size,
             borderRadius: size / 2,
             backgroundColor: getBackgroundColor(),
+            opacity: disabled ? 0.5 : 1,
           },
-          isOutline && styles.outlineBorder,
-          disabled && styles.disabled,
           style,
         ]}
       >
         <Ionicons name={iconName} size={size * 0.44} color={getIconColor()} />
       </TouchableOpacity>
-      {label ? <Text style={styles.label}>{label}</Text> : null}
+      {label ? (
+        <Text className="text-[11px] font-semibold text-textMuted mt-1">
+          {label}
+        </Text>
+      ) : null}
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  wrapper: {
-    alignItems: 'center',
-  },
-  circle: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  outlineBorder: {
-    borderWidth: 1.5,
-    borderColor: AURA_COLORS.borderLight,
-    shadowOpacity: 0,
-    elevation: 0,
-  },
-  label: {
-    marginTop: 6,
-    fontSize: 11,
-    color: AURA_COLORS.textMutedDark,
-    fontWeight: '500',
-  },
-  disabled: {
-    opacity: 0.5,
-  },
-});

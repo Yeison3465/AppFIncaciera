@@ -14,6 +14,7 @@ import {
  * Mapeo de frecuencias de capitalización a periodos por año.
  */
 export const COMPOUNDING_PERIODS_PER_YEAR: Record<CompoundingFrequency, number> = {
+  daily: 360,
   monthly: 12,
   quarterly: 4,
   annual: 1,
@@ -30,12 +31,14 @@ export function calculateCompoundInterest(input: CompoundInterestInput): Compoun
   const {
     initialDeposit,
     annualEffectiveRate,
-    termYears,
     compoundingFrequency,
     periodicDeposit,
     includePeriodicDeposit,
     depositTiming = 'end',
   } = input;
+
+  const rawTerm = typeof input.term === 'number' ? input.term : (input.termYears ?? 0);
+  const termUnit = input.termUnit ?? 'years';
 
   // Validaciones defensivas de entrada
   if (typeof initialDeposit !== 'number' || isNaN(initialDeposit) || initialDeposit < 0) {
@@ -46,8 +49,16 @@ export function calculateCompoundInterest(input: CompoundInterestInput): Compoun
     throw new Error('La tasa efectiva anual no puede ser negativa.');
   }
 
-  if (typeof termYears !== 'number' || isNaN(termYears) || termYears <= 0) {
-    throw new Error('El horizonte en años debe ser mayor a cero.');
+  if (typeof rawTerm !== 'number' || isNaN(rawTerm) || rawTerm < 0) {
+    throw new Error('El plazo de tiempo no puede ser negativo.');
+  }
+
+  // 1. Normalización del plazo a años según la unidad (años, meses, días)
+  let normalizedYears = rawTerm;
+  if (termUnit === 'months') {
+    normalizedYears = rawTerm / 12;
+  } else if (termUnit === 'days') {
+    normalizedYears = rawTerm / 360;
   }
 
   const effectivePeriodicDeposit = includePeriodicDeposit && typeof periodicDeposit === 'number' && !isNaN(periodicDeposit) && periodicDeposit > 0
@@ -55,7 +66,7 @@ export function calculateCompoundInterest(input: CompoundInterestInput): Compoun
     : 0;
 
   const periodsPerYear = COMPOUNDING_PERIODS_PER_YEAR[compoundingFrequency] || 12;
-  const totalPeriods = Math.round(termYears * periodsPerYear);
+  const totalPeriods = rawTerm > 0 ? Math.max(1, Math.round(normalizedYears * periodsPerYear)) : 0;
 
   // Tasa periódica efectiva ip a partir de la tasa anual efectiva (EA)
   // ip = (1 + EA)^(1 / m) - 1
@@ -63,9 +74,11 @@ export function calculateCompoundInterest(input: CompoundInterestInput): Compoun
   const periodicRate = decimalEA > 0 ? Math.pow(1 + decimalEA, 1 / periodsPerYear) - 1 : 0;
 
   // Ajuste del aporte periódico según la frecuencia de capitalización
-  // Si el usuario ingresa un aporte mensual pero capitaliza trimestral o anual:
+  // Si el usuario ingresa un aporte mensual pero capitaliza diario, trimestral o anual:
   let periodContribution = effectivePeriodicDeposit;
-  if (compoundingFrequency === 'quarterly') {
+  if (compoundingFrequency === 'daily') {
+    periodContribution = effectivePeriodicDeposit / 30;
+  } else if (compoundingFrequency === 'quarterly') {
     periodContribution = effectivePeriodicDeposit * 3;
   } else if (compoundingFrequency === 'annual') {
     periodContribution = effectivePeriodicDeposit * 12;
@@ -98,16 +111,38 @@ export function calculateCompoundInterest(input: CompoundInterestInput): Compoun
 
     const currentYear = Math.ceil(period / periodsPerYear);
 
+    const shouldRecord = totalPeriods <= 120
+      || period === totalPeriods
+      || period % (compoundingFrequency === 'daily' ? 30 : 1) === 0;
+
+    if (shouldRecord) {
+      breakdown.push({
+        period,
+        year: currentYear,
+        label: compoundingFrequency === 'daily'
+          ? `Día ${period} (Año ${currentYear})`
+          : `Periodo ${period} (Año ${currentYear})`,
+        startingBalance: Number(startingBalance.toFixed(2)),
+        deposit: Number(deposit.toFixed(2)),
+        interestEarned: Number(interestEarned.toFixed(2)),
+        totalInterestToDate: Number(totalInterest.toFixed(2)),
+        totalContributedToDate: Number(totalContributed.toFixed(2)),
+        endingBalance: Number(currentBalance.toFixed(2)),
+      });
+    }
+  }
+
+  if (breakdown.length === 0) {
     breakdown.push({
-      period,
-      year: currentYear,
-      label: `Periodo ${period} (Año ${currentYear})`,
-      startingBalance: Number(startingBalance.toFixed(2)),
-      deposit: Number(deposit.toFixed(2)),
-      interestEarned: Number(interestEarned.toFixed(2)),
-      totalInterestToDate: Number(totalInterest.toFixed(2)),
-      totalContributedToDate: Number(totalContributed.toFixed(2)),
-      endingBalance: Number(currentBalance.toFixed(2)),
+      period: 0,
+      year: 0,
+      label: 'Inicio (Año 0)',
+      startingBalance: Number(initialDeposit.toFixed(2)),
+      deposit: 0,
+      interestEarned: 0,
+      totalInterestToDate: 0,
+      totalContributedToDate: Number(initialDeposit.toFixed(2)),
+      endingBalance: Number(initialDeposit.toFixed(2)),
     });
   }
 

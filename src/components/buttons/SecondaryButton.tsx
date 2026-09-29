@@ -2,7 +2,6 @@ import React from 'react';
 import {
   TouchableOpacity,
   Text,
-  StyleSheet,
   ActivityIndicator,
   ViewStyle,
   TextStyle,
@@ -25,6 +24,7 @@ interface SecondaryButtonProps {
 /**
  * Botón Secundario (Outline / Filled Light) - Aura Financial V2.5
  * Altura 52px, radio 9999px.
+ * Implementado con Tailwind CSS / NativeWind seguro contra race conditions.
  */
 export const SecondaryButton: React.FC<SecondaryButtonProps> = ({
   title,
@@ -43,63 +43,33 @@ export const SecondaryButton: React.FC<SecondaryButtonProps> = ({
       activeOpacity={0.8}
       onPress={onPress}
       disabled={disabled || loading}
-      style={[
-        styles.button,
-        isOutline ? styles.outlineButton : styles.filledButton,
-        disabled && styles.disabled,
-        style,
-      ]}
+      className={`h-[52px] rounded-full flex-row items-center justify-center px-5 ${
+        isOutline
+          ? 'bg-transparent border-[1.5px] border-borderLight'
+          : 'bg-[#EBECEF]'
+      }`}
+      style={[{ opacity: disabled ? 0.5 : 1 }, style]}
     >
       {loading ? (
         <ActivityIndicator color={AURA_COLORS.textDark} size="small" />
       ) : (
-        <View style={styles.contentRow}>
+        <View className="flex-row items-center justify-center">
           {iconName && (
             <Ionicons
               name={iconName}
               size={18}
               color={AURA_COLORS.textDark}
-              style={styles.leftIcon}
+              style={{ marginRight: 8 }}
             />
           )}
-          <Text style={[styles.text, textStyle]}>{title}</Text>
+          <Text
+            className="text-textDark text-sm font-semibold"
+            style={textStyle}
+          >
+            {title}
+          </Text>
         </View>
       )}
     </TouchableOpacity>
   );
 };
-
-const styles = StyleSheet.create({
-  button: {
-    height: 52,
-    borderRadius: 9999,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 20,
-  },
-  filledButton: {
-    backgroundColor: '#EBECEF',
-  },
-  outlineButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 1.5,
-    borderColor: AURA_COLORS.borderLight,
-  },
-  contentRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  text: {
-    color: AURA_COLORS.textDark,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  leftIcon: {
-    marginRight: 8,
-  },
-  disabled: {
-    opacity: 0.5,
-  },
-});

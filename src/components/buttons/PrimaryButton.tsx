@@ -2,7 +2,6 @@ import React from 'react';
 import {
   TouchableOpacity,
   Text,
-  StyleSheet,
   ActivityIndicator,
   ViewStyle,
   TextStyle,
@@ -25,6 +24,7 @@ interface PrimaryButtonProps {
 /**
  * Botón Primario (Obsidian) - Aura Financial V2.5
  * Fondo #121316, altura 52px, radio 9999px (píldora).
+ * Implementado con Tailwind CSS / NativeWind seguro contra race conditions.
  */
 export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
   title,
@@ -41,31 +41,33 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
       activeOpacity={0.85}
       onPress={onPress}
       disabled={disabled || loading}
-      style={[
-        styles.button,
-        disabled && styles.disabled,
-        style,
-      ]}
+      className="h-[52px] bg-obsidian rounded-full flex-row items-center justify-center px-6"
+      style={[{ opacity: disabled ? 0.5 : 1 }, style]}
     >
       {loading ? (
         <ActivityIndicator color={AURA_COLORS.textPrimary} size="small" />
       ) : (
-        <View style={styles.contentRow}>
+        <View className="flex-row items-center justify-center">
           {iconName && iconPosition === 'left' && (
             <Ionicons
               name={iconName}
               size={18}
               color={AURA_COLORS.textPrimary}
-              style={styles.leftIcon}
+              style={{ marginRight: 8 }}
             />
           )}
-          <Text style={[styles.text, textStyle]}>{title}</Text>
+          <Text
+            className="text-textPrimary text-[15px] font-bold tracking-wide"
+            style={textStyle}
+          >
+            {title}
+          </Text>
           {iconName && iconPosition === 'right' && (
             <Ionicons
               name={iconName}
               size={18}
               color={AURA_COLORS.textPrimary}
-              style={styles.rightIcon}
+              style={{ marginLeft: 8 }}
             />
           )}
         </View>
@@ -73,40 +75,3 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
     </TouchableOpacity>
   );
 };
-
-const styles = StyleSheet.create({
-  button: {
-    height: 52,
-    backgroundColor: AURA_COLORS.obsidian,
-    borderRadius: 9999,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  contentRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  text: {
-    color: AURA_COLORS.textPrimary,
-    fontSize: 15,
-    fontWeight: '700',
-    letterSpacing: 0.2,
-  },
-  leftIcon: {
-    marginRight: 8,
-  },
-  rightIcon: {
-    marginLeft: 8,
-  },
-  disabled: {
-    opacity: 0.5,
-  },
-});

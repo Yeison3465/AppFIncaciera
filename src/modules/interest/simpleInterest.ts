@@ -24,16 +24,16 @@ export function calculateSimpleInterest(input: SimpleInterestInput): SimpleInter
   } = input;
 
   // Validaciones defensivas de entrada
-  if (typeof principal !== 'number' || isNaN(principal) || principal <= 0) {
-    throw new Error('El capital inicial debe ser un número mayor a cero.');
+  if (typeof principal !== 'number' || isNaN(principal) || principal < 0) {
+    throw new Error('El capital inicial no puede ser negativo.');
   }
 
   if (typeof annualRate !== 'number' || isNaN(annualRate) || annualRate < 0) {
     throw new Error('La tasa de interés debe ser un número mayor o igual a cero.');
   }
 
-  if (typeof term !== 'number' || isNaN(term) || term <= 0) {
-    throw new Error('El plazo de tiempo debe ser un número mayor a cero.');
+  if (typeof term !== 'number' || isNaN(term) || term < 0) {
+    throw new Error('El plazo de tiempo no puede ser negativo.');
   }
 
   // 1. Normalización del tiempo t a años según unidad y convención de base diaria

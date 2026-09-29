@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, ViewStyle } from 'react-native';
+import { View, Text, ActivityIndicator, ViewStyle } from 'react-native';
 import { AURA_COLORS } from '../../constants/theme';
 
 interface LoadingStateProps {
@@ -12,6 +12,7 @@ interface LoadingStateProps {
 /**
  * LoadingState - Aura Financial V2.5
  * Spinner animado con subtítulo y badge técnico de infraestructura.
+ * Implementado con Tailwind CSS / NativeWind.
  */
 export const LoadingState: React.FC<LoadingStateProps> = ({
   message = 'Sincronizando Simulación...',
@@ -20,62 +21,26 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
   style,
 }) => {
   return (
-    <View style={[styles.container, style]}>
-      <View style={styles.headerRow}>
-        <ActivityIndicator size="small" color={AURA_COLORS.amberGold} style={styles.spinner} />
-        <View style={styles.textContainer}>
-          <Text style={styles.message}>{message}</Text>
-          <Text style={styles.subtitle}>{subtitle}</Text>
+    <View
+      className="bg-cardWhite rounded-2xl p-4 border border-gray-200 my-2.5"
+      style={style}
+    >
+      <View className="flex-row items-center">
+        <ActivityIndicator
+          size="small"
+          color={AURA_COLORS.amberGold}
+          style={{ marginRight: 12 }}
+        />
+        <View className="flex-1">
+          <Text className="text-[13px] font-bold text-textDark">{message}</Text>
+          <Text className="text-[11px] text-textMutedDark mt-0.5">{subtitle}</Text>
         </View>
         {infrastructureBadge && (
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>{infrastructureBadge}</Text>
+          <View className="px-2 py-0.5 bg-amber-100 rounded-md ml-2">
+            <Text className="text-[10px] font-bold text-amber-700">{infrastructureBadge}</Text>
           </View>
         )}
       </View>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    marginVertical: 10,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  spinner: {
-    marginRight: 12,
-  },
-  textContainer: {
-    flex: 1,
-  },
-  message: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: AURA_COLORS.textDark,
-  },
-  subtitle: {
-    fontSize: 11,
-    color: AURA_COLORS.textMutedDark,
-    marginTop: 2,
-  },
-  badge: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    backgroundColor: '#FEF3C7',
-    borderRadius: 6,
-    marginLeft: 8,
-  },
-  badgeText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#D97706',
-  },
-});
