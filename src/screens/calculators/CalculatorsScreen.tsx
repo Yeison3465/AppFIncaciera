@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import {
   Platform,
   ScrollView,
@@ -30,9 +30,16 @@ export const CalculatorsScreen: React.FC = () => {
   const [activeCalcTab, setActiveCalcTab] = useState<CalculatorTab>('compound');
   const [activeBottomTab, setActiveBottomTab] = useState<TabKey>('calc');
 
-  const handleScrollToTop = () => {
+  const handleScrollToTop = useCallback(() => {
     scrollViewRef.current?.scrollTo({ y: 0, animated: true });
-  };
+  }, []);
+
+  const handleTabChange = useCallback((tab: CalculatorTab) => {
+    if (tab !== activeCalcTab) {
+      setActiveCalcTab(tab);
+      scrollViewRef.current?.scrollTo({ y: 0, animated: false });
+    }
+  }, [activeCalcTab]);
 
   const topInset = Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) : 0);
   const bottomInset = Math.max(insets.bottom, 16);
@@ -66,7 +73,7 @@ export const CalculatorsScreen: React.FC = () => {
         <View className="flex-row bg-gray-100 rounded-full p-1">
           <TouchableOpacity
             activeOpacity={0.7}
-            onPress={() => setActiveCalcTab('compound')}
+            onPress={() => handleTabChange('compound')}
             className={`flex-1 flex-row items-center justify-center py-2.5 rounded-full ${activeCalcTab === 'compound' ? 'bg-obsidian' : 'bg-transparent'
               }`}
           >
@@ -86,7 +93,7 @@ export const CalculatorsScreen: React.FC = () => {
 
           <TouchableOpacity
             activeOpacity={0.7}
-            onPress={() => setActiveCalcTab('simple')}
+            onPress={() => handleTabChange('simple')}
             className={`flex-1 flex-row items-center justify-center py-2.5 rounded-full ${activeCalcTab === 'simple' ? 'bg-obsidian' : 'bg-transparent'
               }`}
           >
@@ -106,7 +113,7 @@ export const CalculatorsScreen: React.FC = () => {
 
           <TouchableOpacity
             activeOpacity={0.7}
-            onPress={() => setActiveCalcTab('rates')}
+            onPress={() => handleTabChange('rates')}
             className={`flex-1 flex-row items-center justify-center py-2.5 rounded-full ${activeCalcTab === 'rates' ? 'bg-obsidian' : 'bg-transparent'
               }`}
           >
@@ -126,15 +133,23 @@ export const CalculatorsScreen: React.FC = () => {
         </View>
       </View>
 
-      {/* CONTENIDO PRINCIPAL */}
+      {/* CONTENIDO PRINCIPAL PERSISTENTE (Keep-Alive) */}
       <ScrollView
         ref={scrollViewRef}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 12 }}
       >
-        {activeCalcTab === 'compound' && <CompoundInterestTab onCalculate={handleScrollToTop} />}
-        {activeCalcTab === 'simple' && <SimpleInterestTab onCalculate={handleScrollToTop} />}
-        {activeCalcTab === 'rates' && <RateConverterTab onCalculate={handleScrollToTop} />}
+        <View style={{ display: activeCalcTab === 'compound' ? 'flex' : 'none' }}>
+          <CompoundInterestTab onCalculate={handleScrollToTop} />
+        </View>
+
+        <View style={{ display: activeCalcTab === 'simple' ? 'flex' : 'none' }}>
+          <SimpleInterestTab onCalculate={handleScrollToTop} />
+        </View>
+
+        <View style={{ display: activeCalcTab === 'rates' ? 'flex' : 'none' }}>
+          <RateConverterTab onCalculate={handleScrollToTop} />
+        </View>
 
         {/* Espacio para que el scroll supere el FloatingIslandTabBar */}
         <View style={{ height: bottomInset + 80 }} />

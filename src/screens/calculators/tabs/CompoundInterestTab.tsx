@@ -21,7 +21,7 @@ export interface CompoundInterestTabProps {
  * Pestaña: Interés Compuesto (RF-05)
  * Implementada 100% con clases de Tailwind CSS / NativeWind.
  */
-export const CompoundInterestTab: React.FC<CompoundInterestTabProps> = ({ onCalculate }) => {
+const CompoundInterestTabComponent: React.FC<CompoundInterestTabProps> = ({ onCalculate }) => {
   const [compoundInitialDeposit, setCompoundInitialDeposit] = useState<number>(0);
   const [compoundFrequency, setCompoundFrequency] = useState<CompoundingFrequency>('monthly');
   const [compoundPeriodicDeposit, setCompoundPeriodicDeposit] = useState<number>(0);
@@ -362,3 +362,6 @@ export const CompoundInterestTab: React.FC<CompoundInterestTabProps> = ({ onCalc
     </View>
   );
 };
+
+export const CompoundInterestTab = React.memo(CompoundInterestTabComponent);
+

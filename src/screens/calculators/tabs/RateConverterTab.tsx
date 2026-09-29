@@ -19,7 +19,7 @@ export interface RateConverterTabProps {
  * Pestaña: Conversión de Tasas (RF-06)
  * Implementada 100% con clases de Tailwind CSS / NativeWind.
  */
-export const RateConverterTab: React.FC<RateConverterTabProps> = ({ onCalculate }) => {
+const RateConverterTabComponent: React.FC<RateConverterTabProps> = ({ onCalculate }) => {
   const [rateSourceValue, setRateSourceValue] = useState<number>(0);
   const [rateSourceType, setRateSourceType] = useState<RateType>('effective');
   const [rateSourcePeriodicity, setRateSourcePeriodicity] = useState<Periodicity>('annual');
@@ -381,3 +381,6 @@ export const RateConverterTab: React.FC<RateConverterTabProps> = ({ onCalculate 
     </View>
   );
 };
+
+export const RateConverterTab = React.memo(RateConverterTabComponent);
+

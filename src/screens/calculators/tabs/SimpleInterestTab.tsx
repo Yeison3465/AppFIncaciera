@@ -21,7 +21,7 @@ export interface SimpleInterestTabProps {
  * Pestaña: Interés Simple (RF-04)
  * Implementada 100% con clases de Tailwind CSS / NativeWind.
  */
-export const SimpleInterestTab: React.FC<SimpleInterestTabProps> = ({ onCalculate }) => {
+const SimpleInterestTabComponent: React.FC<SimpleInterestTabProps> = ({ onCalculate }) => {
   const [simplePrincipal, setSimplePrincipal] = useState<number>(0);
   const [simpleRate, setSimpleRate] = useState<number>(0);
   const [simpleRatePeriodicity, setSimpleRatePeriodicity] = useState<'annual' | 'monthly'>('annual');
@@ -365,3 +365,6 @@ export const SimpleInterestTab: React.FC<SimpleInterestTabProps> = ({ onCalculat
     </View>
   );
 };
+
+export const SimpleInterestTab = React.memo(SimpleInterestTabComponent);
+
