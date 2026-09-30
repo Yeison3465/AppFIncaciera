@@ -68,10 +68,10 @@ export function calculateCompoundInterest(input: CompoundInterestInput): Compoun
   const periodsPerYear = COMPOUNDING_PERIODS_PER_YEAR[compoundingFrequency] || 12;
   const totalPeriods = rawTerm > 0 ? Math.max(1, Math.round(normalizedYears * periodsPerYear)) : 0;
 
-  // Tasa periódica efectiva ip a partir de la tasa anual efectiva (EA)
-  // ip = (1 + EA)^(1 / m) - 1
-  const decimalEA = annualEffectiveRate / 100;
-  const periodicRate = decimalEA > 0 ? Math.pow(1 + decimalEA, 1 / periodsPerYear) - 1 : 0;
+  // Tasa periódica según la frecuencia de capitalización m:
+  // ip = (Tasa Anual / 100) / periodsPerYear
+  const annualRateDecimal = annualEffectiveRate / 100;
+  const periodicRate = annualRateDecimal > 0 ? annualRateDecimal / periodsPerYear : 0;
 
   // Ajuste del aporte periódico según la frecuencia de capitalización
   // Si el usuario ingresa un aporte mensual pero capitaliza diario, trimestral o anual:

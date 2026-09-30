@@ -24,7 +24,7 @@ const CompoundInterestTabComponent: React.FC<CompoundInterestTabProps> = ({ onCa
   const [compoundInitialDeposit, setCompoundInitialDeposit] = useState<number>(0);
   const [compoundFrequency, setCompoundFrequency] = useState<CompoundingFrequency>('monthly');
   const [compoundPeriodicDeposit, setCompoundPeriodicDeposit] = useState<number>(0);
-  const [compoundIncludePeriodic, setCompoundIncludePeriodic] = useState<boolean>(true);
+  const [compoundIncludePeriodic, setCompoundIncludePeriodic] = useState<boolean>(false);
   const [compoundRateEA, setCompoundRateEA] = useState<number>(0);
   const [compoundTerm, setCompoundTerm] = useState<number>(0);
   const [compoundTermUnit, setCompoundTermUnit] = useState<TimeUnit>('years');
@@ -49,7 +49,7 @@ const CompoundInterestTabComponent: React.FC<CompoundInterestTabProps> = ({ onCa
     setCompoundInitialDeposit(0);
     setCompoundFrequency('monthly');
     setCompoundPeriodicDeposit(0);
-    setCompoundIncludePeriodic(true);
+    setCompoundIncludePeriodic(false);
     setCompoundRateEA(0);
     setCompoundTerm(0);
     setCompoundTermUnit('years');
@@ -119,13 +119,17 @@ const CompoundInterestTabComponent: React.FC<CompoundInterestTabProps> = ({ onCa
 
   return (
     <View>
+      {/* TÍTULO PRINCIPAL DE LA PESTAÑA */}
+      <View className="pt-1 pb-1 px-0.5">
+        <Text className="text-3xl font-extrabold text-textDark tracking-tight">
+          Interés Compuesto
+        </Text>
+      </View>
+
       {/* HERO CARD INTERÉS COMPUESTO */}
       <View className="bg-white rounded-3xl p-5 my-2.5 border border-gray-100">
         <View className="flex-row justify-between items-center mb-3">
-          <Text
-            className="text-base font-semibold text-textMutedDark tracking-wider"
-            style={{ letterSpacing: 1.2 }}
-          >
+          <Text className="text-[11px] font-medium text-textMutedDark tracking-wider">
             VALOR FUTURO ESTIMADO
           </Text>
           <View className="flex-row items-center gap-1 bg-emerald-100 px-2 py-0.5 rounded-md">
@@ -143,6 +147,41 @@ const CompoundInterestTabComponent: React.FC<CompoundInterestTabProps> = ({ onCa
           {formatCurrency(compoundResult.futureValue)}
         </Text>
 
+        {/* 2 Columnas de métricas */}
+        <View className="flex-row gap-3 my-3">
+          <View className="flex-1 bg-gray-50 rounded-2xl p-4">
+            <View className="flex-row items-center gap-2 mb-1.5">
+              <View className="w-2 h-2 rounded-full bg-gray-500" />
+              <Text className="text-[13px] font-medium text-gray-700">Capital Aportado</Text>
+            </View>
+            <Text
+              className="text-[22px] font-extrabold text-textDark tracking-tight"
+              style={{ fontVariant: ['tabular-nums'] }}
+            >
+              {formatCurrency(compoundResult.totalPrincipalContributed)}
+            </Text>
+            <Text className="text-xs text-textMutedDark mt-1">
+              {compoundResult.principalPercentage}% del total
+            </Text>
+          </View>
+
+          <View className="flex-1 bg-gray-50 rounded-2xl p-4">
+            <View className="flex-row items-center gap-2 mb-1.5">
+              <View className="w-2 h-2 rounded-full bg-emerald-500" />
+              <Text className="text-[13px] font-medium text-emerald-600">Rendimiento Ganado</Text>
+            </View>
+            <Text
+              className="text-[22px] font-extrabold text-emerald-600 tracking-tight"
+              style={{ fontVariant: ['tabular-nums'] }}
+            >
+              +{formatCurrency(compoundResult.totalInterestEarned)}
+            </Text>
+            <Text className="text-xs text-emerald-600 mt-1">
+              {compoundResult.interestPercentage}% interés puro
+            </Text>
+          </View>
+        </View>
+
         {/* Gráfica de Crecimiento Exponencial con Scrubber */}
         <FinancialAreaChart
           data={chartData}
@@ -153,53 +192,18 @@ const CompoundInterestTabComponent: React.FC<CompoundInterestTabProps> = ({ onCa
           showSecondaryLine={compoundIncludePeriodic && compoundPeriodicDeposit > 0}
           badgeText={`Meta: ${compoundTerm} ${unitLabel}`}
         />
-
-        {/* 2 Columnas de métricas */}
-        <View className="flex-row gap-2.5">
-          <View className="flex-1 bg-gray-50 rounded-xl p-3 border border-gray-100">
-            <View className="flex-row items-center gap-1.5 mb-1">
-              <View className="w-1.5 h-1.5 rounded-full bg-gray-400" />
-              <Text className="text-[10px] font-semibold text-textMutedDark">Capital Aportado</Text>
-            </View>
-            <Text
-              className="text-base font-bold text-textDark"
-              style={{ fontVariant: ['tabular-nums'] }}
-            >
-              {formatCurrency(compoundResult.totalPrincipalContributed)}
-            </Text>
-            <Text className="text-[11px] text-textMuted mt-0.5">
-              {compoundResult.principalPercentage}% del total
-            </Text>
-          </View>
-
-          <View className="flex-1 bg-gray-50 rounded-xl p-3 border border-gray-100">
-            <View className="flex-row items-center gap-1.5 mb-1">
-              <View className="w-1.5 h-1.5 rounded-full bg-emeraldGreen" />
-              <Text className="text-[10px] font-semibold text-textMutedDark">Rendimiento Ganado</Text>
-            </View>
-            <Text
-              className="text-base font-bold text-emeraldGreen"
-              style={{ fontVariant: ['tabular-nums'] }}
-            >
-              +{formatCurrency(compoundResult.totalInterestEarned)}
-            </Text>
-            <Text className="text-[11px] text-emeraldGreen mt-0.5">
-              {compoundResult.interestPercentage}% interés puro
-            </Text>
-          </View>
-        </View>
       </View>
 
       {/* FORMULARIO: CONFIGURACIÓN DE PROYECCIÓN */}
       <View className="bg-white rounded-2xl p-5 my-2.5 border border-gray-100">
         <View className="flex-row justify-between items-center mb-4">
-          <Text className="text-base font-bold text-textDark">Configuración de Proyección</Text>
-          <Ionicons name="options-outline" size={18} color={AURA_COLORS.textDark} />
+          <Text className="text-lg font-bold text-textDark">Configuración de Proyección</Text>
+          <Ionicons name="options-outline" size={20} color={AURA_COLORS.textDark} />
         </View>
 
         {/* Frecuencia de Capitalización */}
         <View className="my-2">
-          <Text className="text-xs font-semibold text-textDark mb-1.5">Frecuencia de Capitalización</Text>
+          <Text className="text-base font-semibold text-textMutedDark mb-1.5">Frecuencia de Capitalización</Text>
           <View className="flex-row bg-gray-100 rounded-xl p-1 gap-1">
             {(['daily', 'monthly', 'quarterly', 'annual'] as CompoundingFrequency[]).map((freq) => {
               const labels: Record<CompoundingFrequency, string> = {
@@ -232,6 +236,7 @@ const CompoundInterestTabComponent: React.FC<CompoundInterestTabProps> = ({ onCa
         {/* Depósito Inicial */}
         <FinancialStepper
           label="Depósito Inicial"
+          labelClassName="text-base font-semibold text-textMutedDark"
           value={compoundInitialDeposit}
           onChange={setCompoundInitialDeposit}
           step={1000}
@@ -242,7 +247,7 @@ const CompoundInterestTabComponent: React.FC<CompoundInterestTabProps> = ({ onCa
         {/* Aporte Periódico Mensual con Switch */}
         <View className="my-2">
           <View className="flex-row justify-between items-center mb-1.5">
-            <Text className="text-xs font-semibold text-textDark">Aporte Periódico Mensual</Text>
+            <Text className="text-base font-semibold text-textMutedDark">Aporte Periódico Mensual</Text>
             <View className="flex-row items-center gap-2">
               {compoundIncludePeriodic && (
                 <View className="bg-amber-100 px-2 py-0.5 rounded">
@@ -269,22 +274,22 @@ const CompoundInterestTabComponent: React.FC<CompoundInterestTabProps> = ({ onCa
           )}
         </View>
 
-        {/* Tasa Anual E.A. */}
+        {/* Tasa Anual */}
         <FinancialStepper
-          label="Tasa Anual E.A."
+          label="Tasa Anual"
+          labelClassName="text-base font-semibold text-textMutedDark"
           value={compoundRateEA}
           onChange={setCompoundRateEA}
           step={0.25}
           min={0}
           decimals={1}
           suffix="%"
-          accessoryIcon="pricetag-outline"
         />
 
         {/* Plazo o Periodo de Tiempo */}
         <View className="my-2">
-          <View className="flex-row justify-between items-center mb-1">
-            <Text className="text-xs font-semibold text-textDark">Plazo o Periodo de Tiempo</Text>
+          <View className="flex-row justify-between items-center mb-1.5">
+            <Text className="text-base font-semibold text-textMutedDark">Plazo o Periodo de Tiempo</Text>
             <Text className="text-[11px] text-textMutedDark">Horizonte (t)</Text>
           </View>
           <View>
@@ -294,7 +299,6 @@ const CompoundInterestTabComponent: React.FC<CompoundInterestTabProps> = ({ onCa
               onChange={setCompoundTerm}
               step={1}
               min={0}
-              accessoryIcon="calendar-outline"
             />
             {/* Selector de unidad de tiempo: Años, Meses, Días */}
             <View className="flex-row gap-2 mt-1.5">

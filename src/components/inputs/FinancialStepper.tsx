@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import { AURA_COLORS } from '../../constants/theme';
 
 interface FinancialStepperProps {
   label: string;
+  labelClassName?: string;
   subLabel?: string;
   value: number;
   onChange: (val: number) => void;
@@ -34,6 +35,7 @@ interface FinancialStepperProps {
  */
 export const FinancialStepper: React.FC<FinancialStepperProps> = ({
   label,
+  labelClassName,
   subLabel,
   value,
   onChange,
@@ -49,16 +51,11 @@ export const FinancialStepper: React.FC<FinancialStepperProps> = ({
   badgeVariant = 'neutral',
   style,
 }) => {
-  const [textValue, setTextValue] = useState<string>(
-    decimals > 0 ? value.toFixed(decimals) : String(value)
-  );
+  const formattedValue = decimals > 0 ? value.toFixed(decimals) : String(value);
+  const [textValue, setTextValue] = useState<string>(formattedValue);
   const [isEditing, setIsEditing] = useState<boolean>(false);
 
-  useEffect(() => {
-    if (!isEditing) {
-      setTextValue(decimals > 0 ? value.toFixed(decimals) : String(value));
-    }
-  }, [value, decimals, isEditing]);
+  const displayValue = isEditing ? textValue : formattedValue;
 
   const handleDecrement = () => {
     const next = Math.max(min, Number((value - step).toFixed(decimals > 0 ? decimals : 2)));
@@ -68,6 +65,11 @@ export const FinancialStepper: React.FC<FinancialStepperProps> = ({
   const handleIncrement = () => {
     const next = max !== undefined ? Math.min(max, Number((value + step).toFixed(decimals > 0 ? decimals : 2))) : Number((value + step).toFixed(decimals > 0 ? decimals : 2));
     onChange(next);
+  };
+
+  const handleFocus = () => {
+    setTextValue(formattedValue);
+    setIsEditing(true);
   };
 
   const handleTextChange = (text: string) => {
@@ -83,12 +85,10 @@ export const FinancialStepper: React.FC<FinancialStepperProps> = ({
     const parsed = parseFloat(textValue.replace(',', '.'));
     if (isNaN(parsed) || parsed < min) {
       onChange(min);
-      setTextValue(decimals > 0 ? min.toFixed(decimals) : String(min));
     } else if (max !== undefined && parsed > max) {
       onChange(max);
-      setTextValue(decimals > 0 ? max.toFixed(decimals) : String(max));
     } else {
-      setTextValue(decimals > 0 ? parsed.toFixed(decimals) : String(parsed));
+      onChange(parsed);
     }
   };
 
@@ -118,9 +118,12 @@ export const FinancialStepper: React.FC<FinancialStepperProps> = ({
   return (
     <View className="my-1.5" style={style}>
       {/* Header con Labels y Badges */}
-      <View className="flex-row justify-between items-center mb-1.5 px-0.5">
-        <Text className="text-[13px] font-semibold text-gray-700">{label}</Text>
-        <View className="flex-row items-center gap-1.5">
+      {(label || badgeText || subLabel) ? (
+        <View className="flex-row justify-between items-center mb-1.5 px-0.5">
+          {label ? (
+            <Text className={labelClassName || "text-[13px] font-semibold text-gray-700"}>{label}</Text>
+          ) : <View />}
+          <View className="flex-row items-center gap-1.5">
           {badgeText && (
             <View className={`px-2 py-0.5 rounded-md ${badgeCls.bg}`}>
               <Text
@@ -134,16 +137,17 @@ export const FinancialStepper: React.FC<FinancialStepperProps> = ({
           {subLabel && <Text className="text-xs text-textMutedDark font-medium">{subLabel}</Text>}
         </View>
       </View>
+      ) : null}
 
       {/* Fila del Control Numérico */}
-      <View className="flex-row items-center bg-gray-100 rounded-2xl p-1.5 h-[58px] border border-gray-200">
+      <View className="flex-row items-center bg-gray-100 rounded-xl p-1 h-[54px]">
         {/* Botón Decremento */}
         <TouchableOpacity
           activeOpacity={0.7}
           onPress={handleDecrement}
-          className="w-11 h-11 rounded-full bg-white items-center justify-center border border-gray-200"
+          className="w-11 h-11 rounded-full bg-white items-center justify-center ml-[6px]"
         >
-          <Ionicons name="remove" size={20} color={AURA_COLORS.textDark} />
+          <Ionicons name="remove" size={19} color={AURA_COLORS.textDark} />
         </TouchableOpacity>
 
         {/* Bloque Central de Valor con Tabular Nums */}
@@ -158,8 +162,8 @@ export const FinancialStepper: React.FC<FinancialStepperProps> = ({
           )}
           <TextInput
             keyboardType="numeric"
-            value={textValue}
-            onFocus={() => setIsEditing(true)}
+            value={displayValue}
+            onFocus={handleFocus}
             onChangeText={handleTextChange}
             onBlur={handleBlur}
             className="text-xl font-extrabold text-textDark text-center py-0 min-w-[70px]"
@@ -180,9 +184,9 @@ export const FinancialStepper: React.FC<FinancialStepperProps> = ({
         <TouchableOpacity
           activeOpacity={0.7}
           onPress={handleIncrement}
-          className="w-11 h-11 rounded-full bg-white items-center justify-center border border-gray-200"
+          className="w-11 h-11 rounded-full bg-white items-center justify-center mr-[6px]"
         >
-          <Ionicons name="add" size={20} color={AURA_COLORS.textDark} />
+          <Ionicons name="add" size={19} color={AURA_COLORS.textDark} />
         </TouchableOpacity>
 
         {/* Icono Accesorio opcional */}

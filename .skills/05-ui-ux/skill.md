@@ -110,30 +110,47 @@ src/components/
      - *Normal / Success:* Borde sutil, ícono de verificación circular verde (`CheckCircle`) en `#10B981` al validar el dato.
      - *Error:* Fondo rojizo suave (`#FEE2E2`), borde `#EF4444`, texto de ayuda inferior en rojo: `"La contraseña debe contener al menos 8 caracteres"`, e ícono de alerta o toggle de visibilidad (`EyeOff`).
 2. **`<FinancialStepper />` (Control Numérico de Alta Precisión)**
-   - Componente indispensable para capitales, aportes, plazos y tasas:
-   - **Encabezado interno:**
-     - Label superior en mayúsculas (ej. `DEPÓSITO INICIAL / CAPITAL` o `TASA DE RENDIMIENTO ESTIMADO`).
-     - Badge de contexto a la derecha (ej. `BASE USD` en fondo crema/ámbar o `Tasa E.A.` en fondo esmeralda).
-   - **Fila interactiva central:**
-     - Botón decremento `[-]` circular/cuadrado oscuro o neutro a la izquierda.
-     - Bloque central con monto en números tabulares gigantes (`fontSize: 24`, `fontWeight: 'bold'`, `fontVariant: ['tabular-nums']`).
-     - Leyenda inferior del paso incremental (ej. `Paso: ± $500` o `Paso: ± 0.25%`).
-     - Botón incremento `[+]` a la derecha.
+   - Componente estandarizado para capitales, aportes, plazos y tasas:
+   - **Encabezado y Labels:**
+     - Soporta prop `labelClassName` para unificar estilos con los títulos de configuración (ej. `text-base font-semibold text-textMutedDark`).
+     - Renderizado condicional del encabezado si existe `label`, `badgeText` o `subLabel`.
+     - Badge opcional a la derecha (ej. `badgeVariant="amber" | "emerald" | "neutral"`).
+   - **Contenedor y Fila Interactiva:**
+     - Contenedor tipo pastilla sin bordes rígidos: `bg-gray-100 rounded-xl p-1 h-[54px]`.
+     - Botón decremento: `w-11 h-11 rounded-full bg-white items-center justify-center ml-[6px]`, icono `remove` tamaño 19px (`AURA_COLORS.textDark`).
+     - Bloque central con monto editable y números tabulares obligatorios (`text-xl font-extrabold text-textDark text-center`, `fontVariant: ['tabular-nums']`).
+     - Prefijo opcional (`prefix="$"`) y sufijo opcional (`suffix="%"`).
+     - Botón incremento: `w-11 h-11 rounded-full bg-white items-center justify-center mr-[6px]`, icono `add` tamaño 19px (`AURA_COLORS.textDark`).
+   - **Valores por defecto en Mockups y Estado Inicial:**
+     - Todo valor inicial o de ejemplo ilustrativo en mockups DEBE iniciar en `0` (ej. `value={0}`, `$0.00` o `0%`).
 
-### 3.3 Tarjetas de Superficie y Bloques Hero (`src/components/cards/`)
+### 3.3 Tarjetas de Superficie, Métricas y Bloques Hero (`src/components/cards/`)
 1. **`<BlackSovereignHero />` (Hero de Resultados Financieros)**
    - Contenedor premium para visualizar el resultado central de préstamos y simulaciones:
    - **Fondo y Forma:** Fondo `#121316`, radio de borde 16px, padding interno de 20px, borde perimetral sutil (`rgba(255,255,255,0.08)`).
    - **Cabecera de la Tarjeta:**
      - Ícono de escudo dorado (`ShieldCheck`) + Título en mayúsculas doradas/blancas (`BLACK SOVEREIGN HERO`).
-     - Badge derecho con borde y fondo oscuro que muestra la tasa: `Tasa 13.8% E.A.`.
+     - Badge derecho con borde y fondo oscuro que muestra la tasa por defecto: `Tasa 0.0% E.A.`.
    - **Cuerpo Central:**
      - Etiqueta tenue: `CUOTA PERIÓDICA FIJA ESTIMADA`.
-     - Valor monetario destacado en Amber Gold o Blanco con número tabular: `$ 785.40 / mes`.
+     - Valor monetario destacado en Amber Gold o Blanco con número tabular: `$ 0.00 / mes`.
    - **Pie de Tarjeta (Sub-métricas en 2 columnas):**
-     - Columna 1: Capital Solicitado -> `$ 15,000.00`.
-     - Columna 2: Total Intereses -> `$ 3,249.60` en ámbar.
-2. **`<SurfaceCard />` (Contenedor Base)**
+     - Columna 1: Capital Solicitado -> `$ 0.00`.
+     - Columna 2: Total Intereses -> `$ 0.00` en ámbar.
+2. **Tarjetas Métricas de Comparación (2 Columnas sin Borde)**
+   - Bloques emparejados para resultados financieros (ej. Capital Aportado vs. Rendimiento Ganado):
+   - **Contenedores:** `bg-gray-50 rounded-2xl p-4` SIN bordes de color (`border-0` / sin `border-gray-100`).
+   - **Columna Izquierda (Capital / Base):**
+     - Punto indicador gris: `w-2 h-2 rounded-full bg-gray-500`.
+     - Título: `text-[13px] font-medium text-gray-700` (`Capital Aportado`).
+     - Monto: `text-[22px] font-extrabold text-textDark` con valor por defecto `$0.00`.
+     - Subtexto: `text-xs text-textMutedDark mt-1` con porcentaje por defecto `0.0% del total`.
+   - **Columna Derecha (Rendimiento / Ganancia Verde):**
+     - Punto indicador verde: `w-2 h-2 rounded-full bg-emerald-500`.
+     - Título en verde: `text-[13px] font-medium text-emerald-600` (`Rendimiento Ganado`).
+     - Monto en verde: `text-[22px] font-extrabold text-emerald-600` con valor por defecto `+$0.00`.
+     - Subtexto en verde: `text-xs text-emerald-600 mt-1` con porcentaje por defecto `0.0% interés puro`.
+3. **`<SurfaceCard />` (Contenedor Base)**
    - Contenedor con `borderRadius: 16`, fondo `#1E2025` (en modo oscuro) o blanco con sombra suave en modo claro. Provee padding configurable (16px a 20px) para agrupar formularios y listados.
 
 ### 3.4 Navegación: Tab Bar Flotante (`src/components/navigation/`)
