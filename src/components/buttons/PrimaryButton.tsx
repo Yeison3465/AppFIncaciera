@@ -16,6 +16,7 @@ interface PrimaryButtonProps {
   iconName?: keyof typeof Ionicons.glyphMap;
   iconPosition?: 'left' | 'right';
   iconColor?: string;
+  customIcon?: React.ReactNode;
   loading?: boolean;
   disabled?: boolean;
   style?: ViewStyle;
@@ -33,6 +34,7 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
   iconName = 'arrow-forward',
   iconPosition = 'right',
   iconColor,
+  customIcon,
   loading = false,
   disabled = false,
   style,
@@ -50,7 +52,10 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
         <ActivityIndicator color={AURA_COLORS.textPrimary} size="small" />
       ) : (
         <View className="flex-row items-center justify-center">
-          {iconName && iconPosition === 'left' && (
+          {customIcon && iconPosition === 'left' && (
+            <View style={{ marginRight: 8 }}>{customIcon}</View>
+          )}
+          {!customIcon && iconName && iconPosition === 'left' && (
             <Ionicons
               name={iconName}
               size={18}
@@ -64,7 +69,10 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
           >
             {title}
           </Text>
-          {iconName && iconPosition === 'right' && (
+          {customIcon && iconPosition === 'right' && (
+            <View style={{ marginLeft: 8 }}>{customIcon}</View>
+          )}
+          {!customIcon && iconName && iconPosition === 'right' && (
             <Ionicons
               name={iconName}
               size={18}

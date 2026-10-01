@@ -1,12 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import Svg, { Path, Rect } from 'react-native-svg';
 import { AURA_COLORS } from '../../../constants/theme';
 import {
   PrimaryButton,
   SecondaryButton,
   FinancialStepper,
-  InfoBanner,
   FinancialAreaChart,
   ChartDataPoint,
 } from '../../../components';
@@ -89,16 +89,30 @@ const SimpleInterestTabComponent: React.FC<SimpleInterestTabProps> = ({ onCalcul
 
   if (!simpleResult) return null;
 
+  const multiplier = simpleResult.principal > 0
+    ? (simpleResult.finalAmount / simpleResult.principal)
+    : 1;
+
   return (
     <View>
+      {/* TÍTULO PRINCIPAL DE LA PESTAÑA */}
+      <View className="pt-1 pb-1 px-0.5">
+        <Text className="text-3xl font-extrabold text-textDark tracking-tight">
+          Interés Simple
+        </Text>
+      </View>
+
       {/* HERO CARD INTERÉS SIMPLE */}
       <View className="bg-white rounded-3xl p-5 my-2.5 border border-gray-100">
         <View className="flex-row justify-between items-center mb-3">
-          <Text className="text-[11px] font-bold text-textMuted tracking-wider">
-            MONTO FINAL ACUMULADO (S)
+          <Text className="text-[11px] font-medium text-textMutedDark tracking-wider">
+            MONTO FINAL ACUMULADO
           </Text>
-          <View className="bg-amber-100 px-2 py-0.5 rounded-md">
-            <Text className="text-[10px] font-bold text-amber-800">Interés Lineal Simple</Text>
+          <View className="flex-row items-center gap-1 bg-emerald-100 px-2 py-0.5 rounded-md">
+            <Ionicons name="trending-up" size={13} color={AURA_COLORS.emeraldGreen} />
+            <Text className="text-[10px] font-bold text-emerald-800">
+              +{simpleResult.totalReturnPercentage.toFixed(1)}% ({multiplier.toFixed(2)}x)
+            </Text>
           </View>
         </View>
 
@@ -109,46 +123,37 @@ const SimpleInterestTabComponent: React.FC<SimpleInterestTabProps> = ({ onCalcul
           {formatCurrency(simpleResult.finalAmount)}
         </Text>
 
-        <View className="flex-row items-center gap-1.5 mt-1 mb-4">
-          <Ionicons name="arrow-up-outline" size={14} color={AURA_COLORS.emeraldGreen} />
-          <Text className="text-xs font-semibold text-emeraldGreen">
-            +{simpleResult.totalReturnPercentage.toFixed(2)}% Rendimiento Total
-          </Text>
-          <Text className="text-xs text-gray-400">•</Text>
-          <Text className="text-xs text-textMutedDark">Ganancia Lineal</Text>
-        </View>
-
         {/* 2 Columnas de métricas */}
-        <View className="flex-row gap-2.5 mb-4">
-          <View className="flex-1 bg-gray-50 rounded-xl p-3 border border-gray-100">
-            <View className="flex-row items-center gap-1.5 mb-1">
-              <View className="w-1.5 h-1.5 rounded-full bg-gray-400" />
-              <Text className="text-[10px] font-semibold text-textMutedDark">CAPITAL INICIAL (C)</Text>
+        <View className="flex-row gap-3 my-3">
+          <View className="flex-1 bg-gray-50 rounded-2xl p-4">
+            <View className="flex-row items-center gap-2 mb-1.5">
+              <View className="w-2 h-2 rounded-full bg-gray-500" />
+              <Text className="text-[13px] font-medium text-gray-700">Capital Aportado</Text>
             </View>
             <Text
-              className="text-base font-bold text-textDark"
+              className="text-[22px] font-extrabold text-textDark tracking-tight"
               style={{ fontVariant: ['tabular-nums'] }}
             >
               {formatCurrency(simpleResult.principal)}
             </Text>
-            <Text className="text-[11px] text-textMuted mt-0.5">
-              {simpleResult.principalPercentage}% del acumulado
+            <Text className="text-xs text-textMutedDark mt-1">
+              {simpleResult.principalPercentage}% del total
             </Text>
           </View>
 
-          <View className="flex-1 bg-gray-50 rounded-xl p-3 border border-gray-100">
-            <View className="flex-row items-center gap-1.5 mb-1">
-              <View className="w-1.5 h-1.5 rounded-full bg-emeraldGreen" />
-              <Text className="text-[10px] font-semibold text-textMutedDark">INTERÉS TOTAL (I)</Text>
+          <View className="flex-1 bg-gray-50 rounded-2xl p-4">
+            <View className="flex-row items-center gap-2 mb-1.5">
+              <View className="w-2 h-2 rounded-full bg-emerald-500" />
+              <Text className="text-[13px] font-medium text-emerald-600">Rendimiento Ganado</Text>
             </View>
             <Text
-              className="text-base font-bold text-emeraldGreen"
+              className="text-[22px] font-extrabold text-emerald-600 tracking-tight"
               style={{ fontVariant: ['tabular-nums'] }}
             >
               +{formatCurrency(simpleResult.interestEarned)}
             </Text>
-            <Text className="text-[11px] text-emeraldGreen mt-0.5">
-              {simpleResult.interestPercentage}% de retorno
+            <Text className="text-xs text-emerald-600 mt-1">
+              {simpleResult.interestPercentage}% interés puro
             </Text>
           </View>
         </View>
@@ -158,9 +163,9 @@ const SimpleInterestTabComponent: React.FC<SimpleInterestTabProps> = ({ onCalcul
           data={chartData}
           primaryColor={AURA_COLORS.emeraldGreen}
           secondaryColor="#9CA3AF"
-          primaryLabel="Capital + Interés"
-          secondaryLabel="Capital Inicial (C)"
-          showSecondaryLine={true}
+          primaryLabel="Valor Proyectado"
+          secondaryLabel=""
+          showSecondaryLine={false}
           badgeText={`Plazo: ${simpleTerm} ${simpleTermUnit === 'years' ? 'Años' : simpleTermUnit === 'months' ? 'Meses' : 'Días'}`}
         />
       </View>
@@ -168,31 +173,25 @@ const SimpleInterestTabComponent: React.FC<SimpleInterestTabProps> = ({ onCalcul
       {/* FORMULARIO: CONFIGURACIÓN DEL CÁLCULO */}
       <View className="bg-white rounded-2xl p-5 my-2.5 border border-gray-100">
         <View className="flex-row justify-between items-center mb-4">
-          <View className="flex-row items-center gap-2">
-            <Ionicons name="options-outline" size={18} color={AURA_COLORS.amberGold} />
-            <Text className="text-base font-bold text-textDark">Configuración del Cálculo</Text>
-          </View>
-          <View className="bg-gray-100 px-2 py-0.5 rounded-md">
-            <Text className="text-[10px] font-bold text-textMutedDark">Aura V3</Text>
-          </View>
+          <Text className="text-lg font-bold text-textDark">Configuración del Cálculo</Text>
+          <Ionicons name="options-outline" size={20} color={AURA_COLORS.textDark} />
         </View>
 
         {/* Capital Inicial */}
         <FinancialStepper
-          label="Capital Inicial ($)"
-          subLabel="Principal (C)"
+          label="Capital Inicial"
+          labelClassName="text-base font-semibold text-textMutedDark"
           value={simplePrincipal}
           onChange={setSimplePrincipal}
           step={1000}
           min={100}
           prefix="$"
-          accessoryIcon="copy-outline"
         />
 
         {/* Tasa de Interés Nominal */}
         <View className="my-2">
-          <View className="flex-row justify-between items-center mb-1">
-            <Text className="text-xs font-semibold text-textDark">Tasa de Interés Nominal (%)</Text>
+          <View className="flex-row justify-between items-center mb-1.5">
+            <Text className="text-base font-semibold text-textMutedDark">Tasa de Interés Nominal</Text>
             <View className="flex-row bg-gray-100 rounded-lg p-0.5">
               <TouchableOpacity
                 onPress={() => setSimpleRatePeriodicity('annual')}
@@ -232,14 +231,13 @@ const SimpleInterestTabComponent: React.FC<SimpleInterestTabProps> = ({ onCalcul
             min={0}
             decimals={2}
             suffix="%"
-            accessoryIcon="pricetag-outline"
           />
         </View>
 
         {/* Plazo o Periodo */}
         <View className="my-2">
-          <View className="flex-row justify-between items-center mb-1">
-            <Text className="text-xs font-semibold text-textDark">Plazo o Periodo de Tiempo</Text>
+          <View className="flex-row justify-between items-center mb-1.5">
+            <Text className="text-base font-semibold text-textMutedDark">Plazo o Periodo de Tiempo</Text>
             <Text className="text-[11px] text-textMutedDark">Duración (t)</Text>
           </View>
           <View>
@@ -249,7 +247,6 @@ const SimpleInterestTabComponent: React.FC<SimpleInterestTabProps> = ({ onCalcul
               onChange={setSimpleTerm}
               step={1}
               min={0}
-              accessoryIcon="calendar-outline"
             />
             {/* Selector de unidad de tiempo */}
             <View className="flex-row gap-2 mt-1.5">
@@ -287,28 +284,37 @@ const SimpleInterestTabComponent: React.FC<SimpleInterestTabProps> = ({ onCalcul
         {/* Base de Cálculo Diaria */}
         <View className="my-2">
           <View className="flex-row justify-between items-center mb-1.5">
-            <Text className="text-xs font-semibold text-textDark">Base de Cálculo Diaria</Text>
+            <Text className="text-base font-semibold text-textMutedDark">Base de Cálculo Diaria</Text>
             <Text className="text-[11px] text-textMutedDark">Convención Financiera</Text>
           </View>
           <View className="flex-row gap-2">
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={() => setSimpleConvention('commercial_360')}
-              className={`flex-1 flex-row items-center justify-center py-2.5 px-3 rounded-xl border ${
+              className={`flex-1 flex-row items-center justify-center py-2.5 px-3 rounded-full border ${
                 simpleConvention === 'commercial_360'
-                  ? 'bg-amber-50 border-amberGold'
+                  ? 'bg-obsidian border-obsidian'
                   : 'bg-gray-50 border-gray-200'
               }`}
             >
-              <Ionicons
-                name="shield-checkmark-outline"
-                size={14}
-                color={simpleConvention === 'commercial_360' ? AURA_COLORS.amberGold : AURA_COLORS.textDark}
-                style={{ marginRight: 6 }}
-              />
+              {simpleConvention === 'commercial_360' ? (
+                <View style={{ marginRight: 6 }}>
+                  <Svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+                    <Path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z" />
+                    <Path d="m9 12 2 2 4-4" />
+                  </Svg>
+                </View>
+              ) : (
+                <Ionicons
+                  name="shield-checkmark-outline"
+                  size={15}
+                  color={AURA_COLORS.textDark}
+                  style={{ marginRight: 6 }}
+                />
+              )}
               <Text
                 className={`text-xs font-bold ${
-                  simpleConvention === 'commercial_360' ? 'text-amber-800' : 'text-textDark'
+                  simpleConvention === 'commercial_360' ? 'text-white' : 'text-textDark'
                 }`}
               >
                 Comercial (360d)
@@ -318,21 +324,30 @@ const SimpleInterestTabComponent: React.FC<SimpleInterestTabProps> = ({ onCalcul
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={() => setSimpleConvention('exact_365')}
-              className={`flex-1 flex-row items-center justify-center py-2.5 px-3 rounded-xl border ${
+              className={`flex-1 flex-row items-center justify-center py-2.5 px-3 rounded-full border ${
                 simpleConvention === 'exact_365'
-                  ? 'bg-amber-50 border-amberGold'
+                  ? 'bg-obsidian border-obsidian'
                   : 'bg-gray-50 border-gray-200'
               }`}
             >
-              <Ionicons
-                name="calendar-clear-outline"
-                size={14}
-                color={simpleConvention === 'exact_365' ? AURA_COLORS.amberGold : AURA_COLORS.textDark}
-                style={{ marginRight: 6 }}
-              />
+              {simpleConvention === 'exact_365' ? (
+                <View style={{ marginRight: 6 }}>
+                  <Svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+                    <Path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z" />
+                    <Path d="m9 12 2 2 4-4" />
+                  </Svg>
+                </View>
+              ) : (
+                <Ionicons
+                  name="calendar-clear-outline"
+                  size={15}
+                  color={AURA_COLORS.textDark}
+                  style={{ marginRight: 6 }}
+                />
+              )}
               <Text
                 className={`text-xs font-bold ${
-                  simpleConvention === 'exact_365' ? 'text-amber-800' : 'text-textDark'
+                  simpleConvention === 'exact_365' ? 'text-white' : 'text-textDark'
                 }`}
               >
                 Real / Exacto (365d)
@@ -342,18 +357,31 @@ const SimpleInterestTabComponent: React.FC<SimpleInterestTabProps> = ({ onCalcul
         </View>
       </View>
 
-      {/* INFO BANNER INTERÉS SIMPLE */}
-      <InfoBanner
-        title="Fórmula Directa I = C · i · t"
-        description="En el interés simple, los rendimientos generados no se reinvierten ni capitalizan ciclo a ciclo; la ganancia se mantiene constante y estrictamente proporcional al capital inicial depositado."
-      />
+      {/* BLOQUE: FÓRMULA DIRECTA */}
+      <View className="bg-gray-100 rounded-2xl p-4 my-2.5 flex-row items-start">
+        <View className="w-10 h-10 rounded-full bg-[#FEEBC8] items-center justify-center mr-3.5 mt-0.5">
+          <Ionicons name="calculator-outline" size={20} color="#F59E0B" />
+        </View>
+        <View className="flex-1">
+          <Text className="text-[15px] font-bold text-textDark mb-1">Fórmula Directa I = C · i · t</Text>
+          <Text className="text-xs text-gray-600 leading-[19px] font-normal">
+            En el interés simple, los rendimientos generados no se reinvierten ni capitalizan ciclo a ciclo; la ganancia se mantiene constante y estrictamente proporcional al capital inicial depositado.
+          </Text>
+        </View>
+      </View>
 
       {/* BOTONES DE ACCIÓN */}
       <View className="mt-2 gap-2.5">
         <PrimaryButton
           title="Calcular Interés Simple"
-          iconName="arrow-up-circle-outline"
           iconPosition="left"
+          customIcon={
+            <Svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+              <Rect x="3" y="4" width="18" height="12" rx="2" />
+              <Path d="m9 10 2 2 4-4" />
+              <Path d="M2 20h20" />
+            </Svg>
+          }
           onPress={() => onCalculate?.()}
         />
         <SecondaryButton

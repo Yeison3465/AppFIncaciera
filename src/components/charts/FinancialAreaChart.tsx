@@ -121,7 +121,7 @@ export const FinancialAreaChart: React.FC<FinancialAreaChartProps> = ({
             <Text className="text-[11px] font-semibold text-textDark">{primaryLabel}</Text>
           </View>
 
-          {showSecondaryLine && (
+          {showSecondaryLine && Boolean(secondaryLabel) && (
             <View className="flex-row items-center gap-1.5">
               <View className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: secondaryColor }} />
               <Text className="text-[11px] font-medium text-textMuted">{secondaryLabel}</Text>
