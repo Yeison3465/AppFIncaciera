@@ -25,7 +25,7 @@ const CompoundInterestTabComponent: React.FC<CompoundInterestTabProps> = ({ onCa
   const [compoundFrequency, setCompoundFrequency] = useState<CompoundingFrequency>('monthly');
   const [compoundPeriodicDeposit, setCompoundPeriodicDeposit] = useState<number>(0);
   const [compoundIncludePeriodic, setCompoundIncludePeriodic] = useState<boolean>(false);
-  const [compoundRateEA, setCompoundRateEA] = useState<number>(0);
+  const [compoundRateNominal, setCompoundRateNominal] = useState<number>(0);
   const [compoundTerm, setCompoundTerm] = useState<number>(0);
   const [compoundTermUnit, setCompoundTermUnit] = useState<TimeUnit>('years');
 
@@ -33,7 +33,7 @@ const CompoundInterestTabComponent: React.FC<CompoundInterestTabProps> = ({ onCa
     try {
       return calculateCompoundInterest({
         initialDeposit: compoundInitialDeposit,
-        annualEffectiveRate: compoundRateEA,
+        nominalAnnualRate: compoundRateNominal,
         term: compoundTerm,
         termUnit: compoundTermUnit,
         compoundingFrequency: compoundFrequency,
@@ -43,14 +43,14 @@ const CompoundInterestTabComponent: React.FC<CompoundInterestTabProps> = ({ onCa
     } catch {
       return null;
     }
-  }, [compoundInitialDeposit, compoundRateEA, compoundTerm, compoundTermUnit, compoundFrequency, compoundPeriodicDeposit, compoundIncludePeriodic]);
+  }, [compoundInitialDeposit, compoundRateNominal, compoundTerm, compoundTermUnit, compoundFrequency, compoundPeriodicDeposit, compoundIncludePeriodic]);
 
   const resetCompound = () => {
     setCompoundInitialDeposit(0);
     setCompoundFrequency('monthly');
     setCompoundPeriodicDeposit(0);
     setCompoundIncludePeriodic(false);
-    setCompoundRateEA(0);
+    setCompoundRateNominal(0);
     setCompoundTerm(0);
     setCompoundTermUnit('years');
   };
@@ -274,12 +274,13 @@ const CompoundInterestTabComponent: React.FC<CompoundInterestTabProps> = ({ onCa
           )}
         </View>
 
-        {/* Tasa Anual */}
+        {/* Tasa Nominal Anual */}
         <FinancialStepper
-          label="Tasa Anual"
+          label="Tasa Nominal Anual (%)"
+          subLabel="Pactada antes de capitalizaciones"
           labelClassName="text-base font-semibold text-textMutedDark"
-          value={compoundRateEA}
-          onChange={setCompoundRateEA}
+          value={compoundRateNominal}
+          onChange={setCompoundRateNominal}
           step={0.25}
           min={0}
           decimals={1}
@@ -340,7 +341,7 @@ const CompoundInterestTabComponent: React.FC<CompoundInterestTabProps> = ({ onCa
         <View className="flex-1">
           <Text className="text-[15px] font-bold text-textDark mb-1">Efecto Bola de Nieve</Text>
           <Text className="text-xs text-gray-600 leading-[19px] font-normal">
-            {`En un plazo de ${compoundTerm} ${unitLabel.toLowerCase()} al ${compoundRateEA}%, tus intereses generados superan el ${compoundResult.totalReturnPercentage.toFixed(0)}% del capital que aportaste. El tiempo es el factor exponencial clave.`}
+            {`En un plazo de ${compoundTerm} ${unitLabel.toLowerCase()} al ${compoundRateNominal}%, tus intereses generados superan el ${compoundResult.totalReturnPercentage.toFixed(0)}% del capital que aportaste. El tiempo es el factor exponencial clave.`}
           </Text>
         </View>
       </View>

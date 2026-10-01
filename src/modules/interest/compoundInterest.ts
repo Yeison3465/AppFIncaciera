@@ -31,12 +31,17 @@ export const COMPOUNDING_PERIODS_PER_YEAR: Record<CompoundingFrequency, number> 
 export function calculateCompoundInterest(input: CompoundInterestInput): CompoundInterestResult {
   const {
     initialDeposit,
-    annualEffectiveRate,
+    nominalAnnualRate,
     compoundingFrequency,
     periodicDeposit,
     includePeriodicDeposit,
     depositTiming = 'end',
   } = input;
+
+  // Soporte retrocompatible con annualEffectiveRate
+  const rateInput = typeof nominalAnnualRate === 'number' && !isNaN(nominalAnnualRate)
+    ? nominalAnnualRate
+    : (input.annualEffectiveRate ?? 0);
 
   const rawTerm = typeof input.term === 'number' ? input.term : (input.termYears ?? 0);
   const termUnit = input.termUnit ?? 'years';
@@ -46,8 +51,8 @@ export function calculateCompoundInterest(input: CompoundInterestInput): Compoun
     throw new Error('El depósito inicial no puede ser negativo.');
   }
 
-  if (typeof annualEffectiveRate !== 'number' || isNaN(annualEffectiveRate) || annualEffectiveRate < 0) {
-    throw new Error('La tasa efectiva anual no puede ser negativa.');
+  if (typeof rateInput !== 'number' || isNaN(rateInput) || rateInput < 0) {
+    throw new Error('La tasa nominal anual no puede ser negativa.');
   }
 
   if (typeof rawTerm !== 'number' || isNaN(rawTerm) || rawTerm < 0) {
@@ -71,9 +76,9 @@ export function calculateCompoundInterest(input: CompoundInterestInput): Compoun
   // 2. Periodos exactos continuos en punto flotante (sin redondear arbitrariamente con Math.round o Math.max(1, ...))
   const exactPeriods = rawTerm > 0 ? normalizedYears * periodsPerYear : 0;
 
-  // Tasa periódica según la frecuencia de capitalización m:
-  // ip = (Tasa Anual / 100) / periodsPerYear
-  const annualRateDecimal = annualEffectiveRate / 100;
+  // Tasa periódica según la frecuencia de capitalización m a partir de la Tasa Nominal Anual (TNA):
+  // ip = (nominalAnnualRate / 100) / periodsPerYear
+  const annualRateDecimal = rateInput / 100;
   const periodicRate = annualRateDecimal > 0 ? annualRateDecimal / periodsPerYear : 0;
 
   // Ajuste del aporte periódico según la frecuencia de capitalización

@@ -58,7 +58,8 @@ export type CompoundingFrequency = 'daily' | 'monthly' | 'quarterly' | 'annual';
 
 export interface CompoundInterestInput {
   initialDeposit: number; // Depósito Inicial (VP)
-  annualEffectiveRate: number; // Tasa Anual E.A. (%)
+  nominalAnnualRate: number; // Tasa Nominal Anual (TNA) (%) pactada antes de capitalizaciones
+  annualEffectiveRate?: number; // Alias retrocompatible (@deprecated)
   termYears?: number; // Horizonte en Años (n) [compatibilidad retroactiva]
   term?: number; // Plazo o Periodo
   termUnit?: TimeUnit; // Unidad: Años, Meses, Días

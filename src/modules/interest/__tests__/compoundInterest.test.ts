@@ -11,7 +11,7 @@ describe('Motor Financiero Puro: calculateCompoundInterest (RF-05)', () => {
     it('1 Día: Interés ≈ $2.60 - $2.72 (VF ≈ $10.002,60 - $10.002,72) y NUNCA $980.00', () => {
       const result = calculateCompoundInterest({
         initialDeposit: principal,
-        annualEffectiveRate: rate,
+        nominalAnnualRate: rate,
         compoundingFrequency: 'annual',
         term: 1,
         termUnit: 'days',
@@ -30,7 +30,7 @@ describe('Motor Financiero Puro: calculateCompoundInterest (RF-05)', () => {
     it('1 Mes: Interés fraccionario continuo (≈ $78.21 - $81.67, VF ≈ $10.078,21) y NUNCA $980.00', () => {
       const result = calculateCompoundInterest({
         initialDeposit: principal,
-        annualEffectiveRate: rate,
+        nominalAnnualRate: rate,
         compoundingFrequency: 'annual',
         term: 1,
         termUnit: 'months',
@@ -50,7 +50,7 @@ describe('Motor Financiero Puro: calculateCompoundInterest (RF-05)', () => {
     it('1 Año: Interés exacto = $980.00 (VF = $10.980,00)', () => {
       const result = calculateCompoundInterest({
         initialDeposit: principal,
-        annualEffectiveRate: rate,
+        nominalAnnualRate: rate,
         compoundingFrequency: 'annual',
         term: 1,
         termUnit: 'years',
@@ -69,7 +69,7 @@ describe('Motor Financiero Puro: calculateCompoundInterest (RF-05)', () => {
     it('1 Día: Interés ≈ $2.68 - $2.72 (VF ≈ $10.002,69 - $10.002,72) y NUNCA $245.00', () => {
       const result = calculateCompoundInterest({
         initialDeposit: principal,
-        annualEffectiveRate: rate,
+        nominalAnnualRate: rate,
         compoundingFrequency: 'quarterly',
         term: 1,
         termUnit: 'days',
@@ -86,7 +86,7 @@ describe('Motor Financiero Puro: calculateCompoundInterest (RF-05)', () => {
     it('1 Mes: Interés fraccionario continuo = $81.01 (≈ $81.67, VF = $10.081,01) y NUNCA $245.00', () => {
       const result = calculateCompoundInterest({
         initialDeposit: principal,
-        annualEffectiveRate: rate,
+        nominalAnnualRate: rate,
         compoundingFrequency: 'quarterly',
         term: 1,
         termUnit: 'months',
@@ -103,7 +103,7 @@ describe('Motor Financiero Puro: calculateCompoundInterest (RF-05)', () => {
     it('1 Año: Interés exacto = $1.016,61 (VF = $11.016,61)', () => {
       const result = calculateCompoundInterest({
         initialDeposit: principal,
-        annualEffectiveRate: rate,
+        nominalAnnualRate: rate,
         compoundingFrequency: 'quarterly',
         term: 1,
         termUnit: 'years',
@@ -122,7 +122,7 @@ describe('Motor Financiero Puro: calculateCompoundInterest (RF-05)', () => {
     it('1 Día: Interés ≈ $2.68 - $2.72 (VF = $10.002,71) y NUNCA $81.67', () => {
       const result = calculateCompoundInterest({
         initialDeposit: principal,
-        annualEffectiveRate: rate,
+        nominalAnnualRate: rate,
         compoundingFrequency: 'monthly',
         term: 1,
         termUnit: 'days',
@@ -139,7 +139,7 @@ describe('Motor Financiero Puro: calculateCompoundInterest (RF-05)', () => {
     it('1 Mes: Interés exacto = $81.67 (VF = $10.081,67)', () => {
       const result = calculateCompoundInterest({
         initialDeposit: principal,
-        annualEffectiveRate: rate,
+        nominalAnnualRate: rate,
         compoundingFrequency: 'monthly',
         term: 1,
         termUnit: 'months',
@@ -156,7 +156,7 @@ describe('Motor Financiero Puro: calculateCompoundInterest (RF-05)', () => {
     it('1 Año: Interés exacto = $1.025,24 (VF = $11.025,24)', () => {
       const result = calculateCompoundInterest({
         initialDeposit: principal,
-        annualEffectiveRate: rate,
+        nominalAnnualRate: rate,
         compoundingFrequency: 'monthly',
         term: 1,
         termUnit: 'years',
@@ -175,7 +175,7 @@ describe('Motor Financiero Puro: calculateCompoundInterest (RF-05)', () => {
     it('Plazo 0 retorna balance inicial con 0 interés', () => {
       const result = calculateCompoundInterest({
         initialDeposit: 5000,
-        annualEffectiveRate: 12,
+        nominalAnnualRate: 12,
         compoundingFrequency: 'monthly',
         term: 0,
         termUnit: 'years',
@@ -192,7 +192,7 @@ describe('Motor Financiero Puro: calculateCompoundInterest (RF-05)', () => {
     it('Tasa 0% no genera interés acumulado', () => {
       const result = calculateCompoundInterest({
         initialDeposit: 5000,
-        annualEffectiveRate: 0,
+        nominalAnnualRate: 0,
         compoundingFrequency: 'monthly',
         term: 2,
         termUnit: 'years',
@@ -208,7 +208,7 @@ describe('Motor Financiero Puro: calculateCompoundInterest (RF-05)', () => {
       assert.throws(() => {
         calculateCompoundInterest({
           initialDeposit: -100,
-          annualEffectiveRate: 10,
+          nominalAnnualRate: 10,
           compoundingFrequency: 'monthly',
           term: 1,
           termUnit: 'years',
@@ -222,21 +222,21 @@ describe('Motor Financiero Puro: calculateCompoundInterest (RF-05)', () => {
       assert.throws(() => {
         calculateCompoundInterest({
           initialDeposit: 1000,
-          annualEffectiveRate: -5,
+          nominalAnnualRate: -5,
           compoundingFrequency: 'monthly',
           term: 1,
           termUnit: 'years',
           periodicDeposit: 0,
           includePeriodicDeposit: false,
         });
-      }, /La tasa efectiva anual no puede ser negativa/);
+      }, /La tasa nominal anual no puede ser negativa/);
     });
 
     it('Lanza error si el plazo es negativo', () => {
       assert.throws(() => {
         calculateCompoundInterest({
           initialDeposit: 1000,
-          annualEffectiveRate: 10,
+          nominalAnnualRate: 10,
           compoundingFrequency: 'monthly',
           term: -1,
           termUnit: 'years',
@@ -251,7 +251,7 @@ describe('Motor Financiero Puro: calculateCompoundInterest (RF-05)', () => {
     it('Calcula correctamente aportes mensuales vencidos (timing: end)', () => {
       const result = calculateCompoundInterest({
         initialDeposit: 1000,
-        annualEffectiveRate: 12,
+        nominalAnnualRate: 12,
         compoundingFrequency: 'monthly',
         term: 1,
         termUnit: 'years',
@@ -270,7 +270,7 @@ describe('Motor Financiero Puro: calculateCompoundInterest (RF-05)', () => {
     it('Calcula correctamente aportes mensuales anticipados (timing: beginning)', () => {
       const result = calculateCompoundInterest({
         initialDeposit: 1000,
-        annualEffectiveRate: 12,
+        nominalAnnualRate: 12,
         compoundingFrequency: 'monthly',
         term: 1,
         termUnit: 'years',
