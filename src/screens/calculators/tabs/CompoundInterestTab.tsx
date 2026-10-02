@@ -1,6 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useMemo, useState } from 'react';
-import { Switch, Text, TouchableOpacity, View } from 'react-native';
+import React, { useMemo, useRef, useState } from 'react';
+import {
+  Dimensions,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  ScrollView,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import {
   ChartDataPoint,
   FinancialAreaChart,
@@ -28,6 +37,12 @@ const CompoundInterestTabComponent: React.FC<CompoundInterestTabProps> = ({ onCa
   const [compoundRateNominal, setCompoundRateNominal] = useState<number>(0);
   const [compoundTerm, setCompoundTerm] = useState<number>(0);
   const [compoundTermUnit, setCompoundTermUnit] = useState<TimeUnit>('years');
+
+  const windowWidth = Dimensions.get('window').width;
+  const initialCarouselWidth = Math.max(windowWidth - 40, 300);
+  const [carouselWidth, setCarouselWidth] = useState<number>(initialCarouselWidth);
+  const [activeSlide, setActiveSlide] = useState<number>(0);
+  const carouselRef = useRef<ScrollView>(null);
 
   const compoundResult = useMemo(() => {
     try {
@@ -333,16 +348,128 @@ const CompoundInterestTabComponent: React.FC<CompoundInterestTabProps> = ({ onCa
         </View>
       </View>
 
-      {/* BLOQUE: EFECTO BOLA DE NIEVE */}
-      <View className="bg-gray-100 rounded-2xl p-4 my-2.5 flex-row items-start">
-        <View className="w-10 h-10 rounded-full bg-[#FEEBC8] items-center justify-center mr-3.5 mt-0.5">
-          <Ionicons name="bulb" size={20} color="#F59E0B" />
-        </View>
-        <View className="flex-1">
-          <Text className="text-[15px] font-bold text-textDark mb-1">Efecto Bola de Nieve</Text>
-          <Text className="text-xs text-gray-600 leading-[19px] font-normal">
-            {`En un plazo de ${compoundTerm} ${unitLabel.toLowerCase()} al ${compoundRateNominal}%, tus intereses generados superan el ${compoundResult.totalReturnPercentage.toFixed(0)}% del capital que aportaste. El tiempo es el factor exponencial clave.`}
-          </Text>
+      {/* CARRUSEL EDUCATIVO: CASOS DE USO Y GUÍA */}
+      <View
+        className="my-2.5"
+        onLayout={(e) => {
+          const w = e.nativeEvent.layout.width;
+          if (w > 0 && Math.abs(w - carouselWidth) > 1) {
+            setCarouselWidth(w);
+          }
+        }}
+      >
+        <ScrollView
+          ref={carouselRef}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          nestedScrollEnabled={true}
+          onScroll={(e: NativeSyntheticEvent<NativeScrollEvent>) => {
+            const offset = e.nativeEvent.contentOffset.x;
+            const index = Math.round(offset / (carouselWidth || 1));
+            if (index !== activeSlide && index >= 0 && index <= 3) {
+              setActiveSlide(index);
+            }
+          }}
+          scrollEventThrottle={16}
+        >
+          {/* SLIDE 1: Efecto Bola de Nieve */}
+          <View style={{ width: carouselWidth }}>
+            <View className="bg-gray-100 rounded-2xl p-4 flex-row items-start min-h-[145px]">
+              <View className="w-10 h-10 rounded-full bg-[#FEEBC8] items-center justify-center mr-3.5 mt-0.5">
+                <Ionicons name="bulb" size={20} color="#F59E0B" />
+              </View>
+              <View className="flex-1">
+                <Text className="text-[15px] font-bold text-textDark mb-1">Efecto Bola de Nieve</Text>
+                <Text className="text-xs text-gray-600 leading-[19px] font-normal">
+                  {`En un plazo de ${compoundTerm} ${unitLabel.toLowerCase()} al ${compoundRateNominal}%, tus intereses generados superan el ${compoundResult.totalReturnPercentage.toFixed(0)}% del capital que aportaste. El tiempo es el factor exponencial clave.`}
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          {/* SLIDE 2: Metas de Ahorro y Patrimonio */}
+          <View style={{ width: carouselWidth }}>
+            <View className="bg-gray-100 rounded-2xl p-4 flex-row items-start min-h-[145px]">
+              <View className="w-10 h-10 rounded-full bg-[#FEEBC8] items-center justify-center mr-3.5 mt-0.5">
+                <Ionicons name="wallet-outline" size={20} color="#F59E0B" />
+              </View>
+              <View className="flex-1">
+                <Text className="text-[15px] font-bold text-textDark mb-1.5">
+                  Metas de Ahorro y Patrimonio
+                </Text>
+                <Text className="text-xs text-gray-700 leading-[18px]">
+                  <Text className="font-bold text-textDark">Objetivo: </Text>Proyección financiera a mediano y largo plazo (1 a 30 años).
+                </Text>
+                <Text className="text-xs text-gray-700 leading-[18px] mt-1">
+                  <Text className="font-bold text-textDark">Uso clave: </Text>Planificar metas de retiro, compra de vivienda o fondos de emergencia.
+                </Text>
+                <Text className="text-xs text-gray-700 leading-[18px] mt-1">
+                  <Text className="font-bold text-textDark">Qué calcula: </Text>Crecimiento real combinando tu capital inicial con aportes mensuales recurrentes.
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          {/* SLIDE 3: Inversiones y Mercados Globales */}
+          <View style={{ width: carouselWidth }}>
+            <View className="bg-gray-100 rounded-2xl p-4 flex-row items-start min-h-[145px]">
+              <View className="w-10 h-10 rounded-full bg-[#FEEBC8] items-center justify-center mr-3.5 mt-0.5">
+                <Ionicons name="globe-outline" size={20} color="#F59E0B" />
+              </View>
+              <View className="flex-1">
+                <Text className="text-[15px] font-bold text-textDark mb-1.5">
+                  Inversiones y Mercados Globales
+                </Text>
+                <Text className="text-xs text-gray-700 leading-[18px]">
+                  <Text className="font-bold text-textDark">Objetivo: </Text>Simulación de carteras de inversión modernas y fondos colectivos.
+                </Text>
+                <Text className="text-xs text-gray-700 leading-[18px] mt-1">
+                  <Text className="font-bold text-textDark">Uso clave: </Text>ETFs (S&P 500), fondos fiduciarios (FICs) y plataformas internacionales/fintech.
+                </Text>
+                <Text className="text-xs text-gray-700 leading-[18px] mt-1">
+                  <Text className="font-bold text-textDark">Qué calcula: </Text>Crecimiento geométrico continuo con rendimientos brutos.
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          {/* SLIDE 4: ¿Para qué NO usarlo aún? */}
+          <View style={{ width: carouselWidth }}>
+            <View className="bg-gray-100 rounded-2xl p-4 flex-row items-start min-h-[145px]">
+              <View className="w-10 h-10 rounded-full bg-amber-100 items-center justify-center mr-3.5 mt-0.5">
+                <Ionicons name="alert-circle-outline" size={20} color="#D97706" />
+              </View>
+              <View className="flex-1">
+                <Text className="text-[15px] font-bold text-textDark mb-1.5">
+                  ¿Para qué NO usarlo aún?
+                </Text>
+                <Text className="text-xs text-gray-700 leading-[18px]">
+                  <Text className="font-bold text-textDark">CDTs bancarios locales: </Text>Requieren tasa Efectiva Anual (E.A.), año real de 365 días y retención en la fuente del 4%.
+                </Text>
+                <Text className="text-xs text-gray-700 leading-[18px] mt-1.5">
+                  <Text className="font-bold text-textDark">Cajitas de ahorro diario (Nu, Lulo): </Text>Su acreditación nocturna utiliza radicación sobre base 365 en lugar de división nominal.
+                </Text>
+              </View>
+            </View>
+          </View>
+        </ScrollView>
+
+        {/* INDICADORES DEL CARRUSEL (DOTS) */}
+        <View className="flex-row justify-center items-center gap-2 mt-2.5">
+          {[0, 1, 2, 3].map((idx) => (
+            <TouchableOpacity
+              key={idx}
+              activeOpacity={0.7}
+              onPress={() => {
+                carouselRef.current?.scrollTo({ x: idx * carouselWidth, animated: true });
+                setActiveSlide(idx);
+              }}
+              className={`h-2 rounded-full ${
+                activeSlide === idx ? 'w-6 bg-obsidian' : 'w-2 bg-gray-300'
+              }`}
+            />
+          ))}
         </View>
       </View>
 
@@ -355,20 +482,11 @@ const CompoundInterestTabComponent: React.FC<CompoundInterestTabProps> = ({ onCa
           iconColor={AURA_COLORS.amberGold}
           onPress={() => onCalculate?.()}
         />
-        <View className="flex-row gap-2">
-          <SecondaryButton
-            title="Restablecer"
-            iconName="refresh"
-            onPress={resetCompound}
-            style={{ flex: 1 }}
-          />
-          <SecondaryButton
-            title="Compartir Reporte"
-            iconName="share-outline"
-            onPress={() => { }}
-            style={{ flex: 1 }}
-          />
-        </View>
+        <SecondaryButton
+          title="Restablecer Valores Predeterminados"
+          iconName="refresh"
+          onPress={resetCompound}
+        />
       </View>
     </View>
   );
