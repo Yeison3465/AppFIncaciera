@@ -3,3 +3,4 @@
  */
 
 export * from './calculators/CalculatorsScreen';
+export * from './loans/LoansScreen';

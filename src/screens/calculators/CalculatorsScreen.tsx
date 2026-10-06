@@ -9,7 +9,6 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { FloatingIslandTabBar, TabKey } from '../../components';
 import { AURA_COLORS } from '../../constants/theme';
 import {
   CompoundInterestTab,
@@ -28,7 +27,6 @@ export const CalculatorsScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const scrollViewRef = useRef<ScrollView>(null);
   const [activeCalcTab, setActiveCalcTab] = useState<CalculatorTab>('compound');
-  const [activeBottomTab, setActiveBottomTab] = useState<TabKey>('calc');
 
   const handleScrollToTop = useCallback(() => {
     scrollViewRef.current?.scrollTo({ y: 0, animated: true });
@@ -40,6 +38,7 @@ export const CalculatorsScreen: React.FC = () => {
       scrollViewRef.current?.scrollTo({ y: 0, animated: false });
     }
   }, [activeCalcTab]);
+
 
   const topInset = Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) : 0);
   const bottomInset = Math.max(insets.bottom, 16);
@@ -156,12 +155,6 @@ export const CalculatorsScreen: React.FC = () => {
           <RateConverterTab onCalculate={handleScrollToTop} />
         </View>
       </ScrollView>
-
-      {/* DOCK FLOTANTE INFERIOR */}
-      <FloatingIslandTabBar
-        activeTab={activeBottomTab}
-        onTabPress={setActiveBottomTab}
-      />
     </View>
   );
 };
