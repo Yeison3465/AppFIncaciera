@@ -17,6 +17,7 @@ export const PERIODICITY_MAP: Record<Periodicity, { periods: number; label: stri
   semiannual: { periods: 2, label: 'Semestral', short: 'S.' },
   quarterly: { periods: 4, label: 'Trimestral', short: 'T.' },
   monthly: { periods: 12, label: 'Mensual', short: 'M.' },
+  biweekly: { periods: 24, label: 'Quincenal', short: 'Q.' },
   weekly: { periods: 52, label: 'Semanal', short: 'Sem.' },
   daily: { periods: 360, label: 'Diario', short: 'D.' },
 };
@@ -134,6 +135,7 @@ export function convertRate(input: RateConversionInput): RateConversionResult {
     equivalentRate: Number((equivalentRateDecimal * 100).toFixed(2)),
     effectiveAnnualRate: Number((effectiveAnnualRateDecimal * 100).toFixed(2)),
     targetPeriodicRate: Number((targetPeriodicDecimal * 100).toFixed(2)),
+    targetPeriodicDecimal,
     targetPeriodicLabel,
     mathematicalFormula: formulaText,
     verified: true,

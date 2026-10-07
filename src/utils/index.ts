@@ -2,5 +2,4 @@
  * Formateo de moneda, fechas, validaciones genéricas.
  */
 
-export { };
-
+export * from './formatters';

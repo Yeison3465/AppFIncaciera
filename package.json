@@ -47,7 +47,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "test": "npx tsx --test src/modules/interest/__tests__/compoundInterest.test.ts"
+    "test": "npx tsx --test src/modules/interest/__tests__/compoundInterest.test.ts src/modules/loans/__tests__/loanCalculator.test.ts"
   },
   "private": true
 }

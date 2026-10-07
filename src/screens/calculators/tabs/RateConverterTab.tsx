@@ -91,6 +91,7 @@ const RateConverterTabComponent: React.FC<RateConverterTabProps> = ({ onCalculat
     { key: 'semiannual', label: 'Semestral' },
     { key: 'quarterly', label: 'Trimestral' },
     { key: 'monthly', label: 'Mensual' },
+    { key: 'biweekly', label: 'Quincenal' },
     { key: 'weekly', label: 'Semanal' },
     { key: 'daily', label: 'Diario' },
   ];

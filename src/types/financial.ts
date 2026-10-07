@@ -6,6 +6,7 @@
 export type Periodicity = 
   | 'daily' 
   | 'weekly' 
+  | 'biweekly'
   | 'monthly' 
   | 'quarterly' 
   | 'semiannual' 
@@ -111,6 +112,7 @@ export interface RateConversionResult {
   equivalentRate: number; // Tasa Equivalente Calculada (%)
   effectiveAnnualRate: number; // Tasa Efectiva Anual de referencia normalizada (%)
   targetPeriodicRate: number; // Tasa periódica en el periodo destino (%)
+  targetPeriodicDecimal?: number; // Tasa periódica exacta en decimal
   targetPeriodicLabel: string; // Etiqueta descriptiva (ej. "1.39 % M. Venc.")
   mathematicalFormula: string; // Explicación de la fórmula aplicada
   verified: boolean; // Validación matemática confirmada

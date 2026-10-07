@@ -206,7 +206,7 @@ export const FinancialAreaChart: React.FC<FinancialAreaChartProps> = ({
               const original = index >= 0 ? data[index] : null;
 
               return (
-                <View className="bg-obsidian px-2.5 py-1.5 rounded-lg border border-gray-700 shadow-md">
+                <View className="bg-obsidian px-2.5 py-1.5 rounded-lg border border-gray-700">
                   <Text className="text-[9px] text-gray-400 font-medium">
                     {original?.periodLabel || (original?.label ? `Año ${original.label}` : 'Proyección')}
                   </Text>
