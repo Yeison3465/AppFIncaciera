@@ -111,7 +111,7 @@ export const LoanSimulatorTab: React.FC<LoanSimulatorTabProps> = ({
   const hasCalculation = result && result.amount > 0 && result.term > 0;
 
   return (
-    <View className="space-y-4">
+    <View style={{ gap: 16 }}>
       {/* 1. Título principal de la pestaña (Estilo idéntico a Calculadoras) */}
       <View className="mb-4 px-0.5">
         <Text className="text-3xl font-extrabold text-textDark tracking-tight">
@@ -120,7 +120,7 @@ export const LoanSimulatorTab: React.FC<LoanSimulatorTabProps> = ({
       </View>
 
       {/* 2. Tarjeta Hero de Resultados (Estilo idéntico a CompoundInterestTab) */}
-      <View className="bg-white rounded-3xl p-5 mb-5 border border-gray-100 shadow-sm">
+      <View className="bg-white rounded-3xl p-5 mb-5 border border-gray-100">
         <View className="flex-row justify-between items-center mb-3">
           <Text className="text-[11px] font-medium text-textMutedDark tracking-wider uppercase">
             CUOTA ESTIMADA
@@ -210,7 +210,7 @@ export const LoanSimulatorTab: React.FC<LoanSimulatorTabProps> = ({
       </View>
 
       {/* 3. Selector de Sistema de Amortización */}
-      <View className="bg-white border border-gray-100 rounded-2xl p-5 mb-5 space-y-3 shadow-sm">
+      <View className="bg-white border border-gray-100 rounded-2xl p-5 mb-5" style={{ gap: 12 }}>
         <View className="flex-row items-center justify-between mb-1">
           <Text className="text-lg font-bold text-textDark">
             Sistema de Amortización
@@ -283,7 +283,7 @@ export const LoanSimulatorTab: React.FC<LoanSimulatorTabProps> = ({
       </View>
 
       {/* 4. Formulario de Parámetros del Préstamo */}
-      <View className="bg-white border border-gray-100 rounded-2xl p-5 mb-5 space-y-4 shadow-sm">
+      <View className="bg-white border border-gray-100 rounded-2xl p-5 mb-5" style={{ gap: 16 }}>
         <View className="flex-row items-center justify-between mb-2">
           <Text className="text-lg font-bold text-textDark">
             Parámetros del Crédito
@@ -529,7 +529,7 @@ export const LoanSimulatorTab: React.FC<LoanSimulatorTabProps> = ({
             <Ionicons name="shield-checkmark-outline" size={18} color="#F59E0B" />
           </View>
 
-          <View className="space-y-4">
+          <View style={{ gap: 16 }}>
             {/* Seguro de Vida Deudores */}
             <View>
               <View className="flex-row items-center justify-between mb-2.5">
@@ -632,7 +632,7 @@ export const LoanSimulatorTab: React.FC<LoanSimulatorTabProps> = ({
       </View>
 
       {/* 5. Botones de Acción */}
-      <View className="space-y-3 pt-2 mb-6">
+      <View className="pt-2 mb-6" style={{ gap: 12 }}>
         {/* Botón Ver Tabla de Amortización (Texto centrado) */}
         <TouchableOpacity
           activeOpacity={0.85}

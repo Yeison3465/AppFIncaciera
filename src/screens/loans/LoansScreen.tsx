@@ -63,6 +63,7 @@ export const LoansScreen: React.FC = () => {
   const scrollViewRef = useRef<ScrollView>(null);
 
   const [activeTab, setActiveTab] = useState<LoansScreenTab>('simulator');
+  const [hasOpenedSchedule, setHasOpenedSchedule] = useState<boolean>(false);
 
   // Estado del préstamo (Valores predeterminados en 0)
   const [amount, setAmount] = useState<number>(0);
@@ -109,6 +110,9 @@ export const LoansScreen: React.FC = () => {
   ]);
 
   const handleTabChange = (tab: LoansScreenTab) => {
+    if (tab === 'schedule') {
+      setHasOpenedSchedule(true);
+    }
     setActiveTab(tab);
     scrollViewRef.current?.scrollTo({ y: 0, animated: false });
   };
@@ -239,13 +243,15 @@ export const LoansScreen: React.FC = () => {
           />
         </View>
 
-        {/* Pestaña Persistente: Amortización (Keep-Alive) */}
-        <View style={{ display: activeTab === 'schedule' ? 'flex' : 'none' }}>
-          <AmortizationScheduleTab
-            result={simulationResult}
-            onBackToSimulator={() => handleTabChange('simulator')}
-          />
-        </View>
+        {/* Pestaña Persistente: Amortización (Keep-Alive con montaje bajo demanda) */}
+        {hasOpenedSchedule && (
+          <View style={{ display: activeTab === 'schedule' ? 'flex' : 'none' }}>
+            <AmortizationScheduleTab
+              result={simulationResult}
+              onBackToSimulator={() => handleTabChange('simulator')}
+            />
+          </View>
+        )}
       </ScrollView>
     </View>
   );

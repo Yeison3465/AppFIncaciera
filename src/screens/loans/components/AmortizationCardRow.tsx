@@ -21,7 +21,7 @@ export const AmortizationCardRow = React.memo<AmortizationCardRowProps>(
         <View
           className={`p-4 rounded-2xl mb-3.5 border ${
             isLast
-              ? 'bg-emerald-500/10 border-emerald-500'
+              ? 'bg-emerald-50 border-emerald-500'
               : 'bg-white border-[#ECEBED]'
           }`}
         >
@@ -133,10 +133,10 @@ export const AmortizationCardRow = React.memo<AmortizationCardRowProps>(
         </View>
 
         {/* 2. Grid de 4 Variables (Capital, Interés, Seguro, Otros Costos) con espacio holgado */}
-        <View className="bg-gray-50/80 p-3.5 rounded-2xl border border-gray-100 gap-3">
+        <View className="bg-gray-50 p-3.5 rounded-2xl border border-gray-100 gap-3">
           <View className="flex-row gap-3">
             {/* Abono a Capital */}
-            <View className="flex-1 bg-white p-3.5 rounded-xl border border-gray-200/70 shadow-sm">
+            <View className="flex-1 bg-white p-3.5 rounded-xl border border-gray-200">
               <Text className="text-xs text-textMutedDark font-semibold uppercase tracking-wider mb-1">
                 1. Abono a Capital
               </Text>
@@ -152,7 +152,7 @@ export const AmortizationCardRow = React.memo<AmortizationCardRowProps>(
             </View>
 
             {/* Interés Periodo */}
-            <View className="flex-1 bg-white p-3.5 rounded-xl border border-gray-200/70 shadow-sm">
+            <View className="flex-1 bg-white p-3.5 rounded-xl border border-gray-200">
               <Text className="text-xs text-textMutedDark font-semibold uppercase tracking-wider mb-1">
                 2. Interés Periodo
               </Text>
@@ -170,7 +170,7 @@ export const AmortizationCardRow = React.memo<AmortizationCardRowProps>(
 
           <View className="flex-row gap-3">
             {/* Seguro de Vida */}
-            <View className="flex-1 bg-white p-3.5 rounded-xl border border-gray-200/70 shadow-sm">
+            <View className="flex-1 bg-white p-3.5 rounded-xl border border-gray-200">
               <Text className="text-xs text-textMutedDark font-semibold uppercase tracking-wider mb-1">
                 3. Seguro de Vida
               </Text>
@@ -186,7 +186,7 @@ export const AmortizationCardRow = React.memo<AmortizationCardRowProps>(
             </View>
 
             {/* Otros Costos */}
-            <View className="flex-1 bg-white p-3.5 rounded-xl border border-gray-200/70 shadow-sm">
+            <View className="flex-1 bg-white p-3.5 rounded-xl border border-gray-200">
               <Text className="text-xs text-textMutedDark font-semibold uppercase tracking-wider mb-1">
                 4. Otros Costos
               </Text>
@@ -205,7 +205,7 @@ export const AmortizationCardRow = React.memo<AmortizationCardRowProps>(
 
         {/* 3. Saldo Deudor Restante Post-Pago */}
         {isLast ? (
-          <View className="mt-3.5 flex-row items-center justify-between bg-emerald-50/70 px-4 py-3 rounded-xl border border-emerald-500/20">
+          <View className="mt-3.5 flex-row items-center justify-between bg-emerald-50 px-4 py-3 rounded-xl border border-emerald-200">
             <View className="flex-row items-center gap-2">
               <Ionicons name="checkmark-circle" size={17} color="#10B981" />
               <Text className="text-xs font-bold text-emerald-800 uppercase tracking-wider">
@@ -220,7 +220,7 @@ export const AmortizationCardRow = React.memo<AmortizationCardRowProps>(
             </Text>
           </View>
         ) : (
-          <View className="mt-3.5 flex-row items-center justify-between bg-gray-100/80 px-4 py-3 rounded-xl">
+          <View className="mt-3.5 flex-row items-center justify-between bg-gray-100 px-4 py-3 rounded-xl">
             <View className="flex-row items-center gap-2">
               <Ionicons name="trending-down" size={16} color={AURA_COLORS.textMutedDark} />
               <Text className="text-textMutedDark text-xs font-medium">

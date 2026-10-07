@@ -155,14 +155,17 @@ export const AmortizationScheduleTab: React.FC<AmortizationScheduleTabProps> = (
   // Estado vacío si no hay cálculo o los valores son 0
   if (!result || result.amount <= 0 || result.schedule.length === 0) {
     return (
-      <View className="space-y-5 pb-8">
+      <View className="pb-8" style={{ gap: 20 }}>
         <View className="pt-1 pb-1 px-0.5">
           <Text className="text-3xl font-extrabold text-textDark tracking-tight">
             Tabla de Amortización
           </Text>
         </View>
 
-        <View className="bg-white rounded-3xl p-6 border border-gray-100 items-center justify-center my-4 space-y-3">
+        <View
+          className="bg-white rounded-3xl p-6 border border-gray-100 items-center justify-center my-4"
+          style={{ gap: 12 }}
+        >
           <View className="w-16 h-16 rounded-full bg-amber-100 items-center justify-center mb-1">
             <Ionicons name="calculator-outline" size={32} color="#F59E0B" />
           </View>
@@ -203,7 +206,7 @@ export const AmortizationScheduleTab: React.FC<AmortizationScheduleTabProps> = (
         </View>
 
         {/* Barra de contexto con mayor legibilidad */}
-        <View className="flex-row items-center gap-2 px-4 py-3 rounded-2xl bg-gray-100 border border-gray-200/70 flex-wrap">
+        <View className="flex-row items-center gap-2 px-4 py-3 rounded-2xl bg-gray-100 border border-gray-200 flex-wrap">
           <Ionicons name="wallet-outline" size={18} color="#F59E0B" />
           <Text
             className="text-sm text-textDark font-medium"
@@ -215,7 +218,7 @@ export const AmortizationScheduleTab: React.FC<AmortizationScheduleTabProps> = (
       </View>
 
       {/* 2. Totales Acumulados (Estilo Hero Card) */}
-      <View className="bg-white rounded-3xl p-6 border border-gray-100 mb-6 shadow-sm">
+      <View className="bg-white rounded-3xl p-6 border border-gray-100 mb-6">
         <View className="flex-row items-center justify-between mb-2">
           <Text className="text-xs font-semibold text-textMutedDark tracking-wider uppercase">
             COSTO TOTAL ACUMULADO
