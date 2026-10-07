@@ -47,25 +47,25 @@ export const CalculatorsScreen: React.FC = () => {
     <View className="flex-1 bg-[#F8F9FA]">
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
-      {/* HEADER SUPERIOR */}
+      {/* HEADER SUPERIOR Y SELECTOR DE TABS */}
       <View
-        className="flex-row items-center justify-between px-5 pb-3 bg-white"
+        className="px-5 pb-3.5 bg-white border-b border-[#F0F0F2]"
         style={{ paddingTop: topInset + 8 }}
       >
-        <View className="flex-row items-center gap-3">
-          <View className="w-10 h-10 rounded-full bg-obsidian items-center justify-center">
-            <Text className="text-white font-extrabold text-base">A</Text>
-          </View>
-          <View>
-            <Text className="text-2xl font-black text-textDark tracking-tight">
-              Calculadoras
-            </Text>
+        <View className="flex-row items-center justify-between mb-3.5">
+          <View className="flex-row items-center gap-3">
+            <View className="w-10 h-10 rounded-full bg-obsidian items-center justify-center">
+              <Text className="text-white font-extrabold text-base">A</Text>
+            </View>
+            <View>
+              <Text className="text-2xl font-black text-textDark tracking-tight">
+                Calculadoras
+              </Text>
+            </View>
           </View>
         </View>
-      </View>
 
-      {/* SELECTOR DE TABS SUPERIOR (Compuesto | Simple | Tasas) */}
-      <View className="bg-white px-5 pb-3 border-b border-[#F0F0F2]">
+        {/* SELECTOR DE TABS SUPERIOR (Compuesto | Simple | Tasas) */}
         <View className="flex-row bg-gray-100 rounded-full p-1">
           <TouchableOpacity
             activeOpacity={0.7}
@@ -138,7 +138,7 @@ export const CalculatorsScreen: React.FC = () => {
         scrollEventThrottle={16}
         nestedScrollEnabled={true}
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 12, paddingBottom: 24 }}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 96 }}
       >
         <View style={{ display: activeCalcTab === 'compound' ? 'flex' : 'none' }}>
           <CompoundInterestTab onCalculate={handleScrollToTop} />

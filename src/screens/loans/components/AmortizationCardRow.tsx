@@ -19,7 +19,7 @@ export const AmortizationCardRow = React.memo<AmortizationCardRowProps>(
     if (isCompact) {
       return (
         <View
-          className={`p-4 rounded-2xl mb-3 border ${
+          className={`p-4 rounded-2xl mb-3.5 border ${
             isLast
               ? 'bg-emerald-500/10 border-emerald-500'
               : 'bg-white border-[#ECEBED]'
@@ -83,7 +83,7 @@ export const AmortizationCardRow = React.memo<AmortizationCardRowProps>(
     // Modo Detallado con mayor separación, jerarquía y tipografía generosa
     return (
       <View
-        className={`rounded-2xl p-5 mb-4 border ${
+        className={`rounded-2xl p-5 mb-4.5 border ${
           isLast
             ? 'bg-emerald-500/10 border-2 border-[#10B981]'
             : 'bg-white border-[#ECEBED]'

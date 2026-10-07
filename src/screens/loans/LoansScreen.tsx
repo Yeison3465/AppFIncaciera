@@ -110,7 +110,7 @@ export const LoansScreen: React.FC = () => {
 
   const handleTabChange = (tab: LoansScreenTab) => {
     setActiveTab(tab);
-    scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+    scrollViewRef.current?.scrollTo({ y: 0, animated: false });
   };
 
   const handleReset = () => {
@@ -135,12 +135,12 @@ export const LoansScreen: React.FC = () => {
     <View className="flex-1 bg-[#F8F9FA]">
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
-      {/* HEADER SUPERIOR (Aura Financial) */}
+      {/* HEADER SUPERIOR & SELECTOR DE TABS */}
       <View
-        className="px-5 pb-3 bg-white border-b border-[#F0F0F2]"
+        className="px-5 pb-3.5 bg-white border-b border-[#F0F0F2]"
         style={{ paddingTop: topInset + 8 }}
       >
-        <View className="flex-row items-center justify-between">
+        <View className="flex-row items-center justify-between mb-3.5">
           <View className="flex-row items-center gap-3">
             <View className="w-10 h-10 rounded-full bg-[#121316] items-center justify-center">
               <Text className="text-white font-black text-base tracking-wide">A</Text>
@@ -154,7 +154,7 @@ export const LoansScreen: React.FC = () => {
         </View>
 
         {/* SELECTOR DE TABS SUPERIOR (Simulador | Amortización) */}
-        <View className="flex-row bg-gray-100 rounded-full p-1 mt-3">
+        <View className="flex-row bg-gray-100 rounded-full p-1">
           <TouchableOpacity
             activeOpacity={0.8}
             onPress={() => handleTabChange('simulator')}
@@ -212,7 +212,8 @@ export const LoansScreen: React.FC = () => {
           paddingBottom: 96, // Espacio para el FloatingIslandTabBar
         }}
       >
-        {activeTab === 'simulator' ? (
+        {/* Pestaña Persistente: Simulador (Keep-Alive) */}
+        <View style={{ display: activeTab === 'simulator' ? 'flex' : 'none' }}>
           <LoanSimulatorTab
             amount={amount}
             setAmount={setAmount}
@@ -236,12 +237,15 @@ export const LoansScreen: React.FC = () => {
             onViewAmortization={() => handleTabChange('schedule')}
             onReset={handleReset}
           />
-        ) : (
+        </View>
+
+        {/* Pestaña Persistente: Amortización (Keep-Alive) */}
+        <View style={{ display: activeTab === 'schedule' ? 'flex' : 'none' }}>
           <AmortizationScheduleTab
             result={simulationResult}
             onBackToSimulator={() => handleTabChange('simulator')}
           />
-        )}
+        </View>
       </ScrollView>
     </View>
   );

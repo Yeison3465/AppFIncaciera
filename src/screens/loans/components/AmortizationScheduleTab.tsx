@@ -185,10 +185,10 @@ export const AmortizationScheduleTab: React.FC<AmortizationScheduleTabProps> = (
     : [];
 
   return (
-    <View className="space-y-5 pb-8">
+    <View className="pb-10">
       {/* 1. Encabezado de la pestaña y Contexto del Préstamo */}
-      <View className="space-y-2 pt-1">
-        <View className="flex-row items-center justify-between flex-wrap gap-2">
+      <View className="mb-6">
+        <View className="flex-row items-center justify-between flex-wrap gap-2 mb-3">
           <Text className="text-3xl font-extrabold text-textDark tracking-tight">
             Tabla de Amortización
           </Text>
@@ -203,7 +203,7 @@ export const AmortizationScheduleTab: React.FC<AmortizationScheduleTabProps> = (
         </View>
 
         {/* Barra de contexto con mayor legibilidad */}
-        <View className="flex-row items-center gap-2 px-4 py-3 rounded-2xl bg-gray-100 border border-gray-200/70 flex-wrap mt-1">
+        <View className="flex-row items-center gap-2 px-4 py-3 rounded-2xl bg-gray-100 border border-gray-200/70 flex-wrap">
           <Ionicons name="wallet-outline" size={18} color="#F59E0B" />
           <Text
             className="text-sm text-textDark font-medium"
@@ -215,8 +215,8 @@ export const AmortizationScheduleTab: React.FC<AmortizationScheduleTabProps> = (
       </View>
 
       {/* 2. Totales Acumulados (Estilo Hero Card) */}
-      <View className="bg-white rounded-3xl p-6 border border-gray-100 space-y-4">
-        <View className="flex-row items-center justify-between">
+      <View className="bg-white rounded-3xl p-6 border border-gray-100 mb-6 shadow-sm">
+        <View className="flex-row items-center justify-between mb-2">
           <Text className="text-xs font-semibold text-textMutedDark tracking-wider uppercase">
             COSTO TOTAL ACUMULADO
           </Text>
@@ -234,12 +234,12 @@ export const AmortizationScheduleTab: React.FC<AmortizationScheduleTabProps> = (
         >
           {formatCurrency(result.totalCost)}
         </Text>
-        <Text className="text-xs text-textMutedDark mb-1">
+        <Text className="text-xs text-textMutedDark mb-4">
           Total desembolsado a lo largo de {result.term} cuotas periódicas
         </Text>
 
         {/* 2 Columnas de métricas en cajas grises con amplio padding */}
-        <View className="flex-row gap-3 my-2">
+        <View className="flex-row gap-3 mb-3.5">
           {/* 1. Suma Abonos a Capital */}
           <View className="flex-1 bg-gray-50 rounded-2xl p-4">
             <View className="flex-row items-center gap-2 mb-1.5">
@@ -276,7 +276,7 @@ export const AmortizationScheduleTab: React.FC<AmortizationScheduleTabProps> = (
         </View>
 
         {/* Fila secundaria: Seguros y Costos Adicionales */}
-        <View className="bg-gray-50 rounded-2xl p-4 flex-row items-center justify-between">
+        <View className="bg-gray-50 rounded-2xl p-4 flex-row items-center justify-between mb-4">
           <View>
             <Text className="text-sm font-semibold text-gray-700">
               Seguros y Gastos Adicionales
@@ -294,8 +294,8 @@ export const AmortizationScheduleTab: React.FC<AmortizationScheduleTabProps> = (
         </View>
 
         {/* Barra de Distribución Proporcional */}
-        <View className="pt-2 border-t border-gray-100 space-y-2">
-          <View className="flex-row items-center justify-between text-xs mb-1">
+        <View className="pt-3.5 border-t border-gray-100">
+          <View className="flex-row items-center justify-between text-xs mb-2">
             <Text className="text-xs font-semibold text-textMutedDark">
               Distribución Total del Flujo
             </Text>
@@ -307,7 +307,7 @@ export const AmortizationScheduleTab: React.FC<AmortizationScheduleTabProps> = (
             </Text>
           </View>
 
-          <View className="w-full h-3 rounded-full bg-gray-200 overflow-hidden flex-row">
+          <View className="w-full h-3 rounded-full bg-gray-200 overflow-hidden flex-row mb-2">
             <View
               style={{ width: `${result.summary.capitalPercentage}%` }}
               className="h-full bg-[#121316]"
@@ -355,9 +355,9 @@ export const AmortizationScheduleTab: React.FC<AmortizationScheduleTabProps> = (
       </View>
 
       {/* 3. Filtros Interactivos & Opciones de Visualización */}
-      <View className="space-y-3">
+      <View className="mb-6">
         {/* Fila de Toggles: Detallada/Compacta y Ver Resumida/Todas */}
-        <View className="flex-row items-center gap-2">
+        <View className="flex-row items-center gap-2 mb-3.5">
           {/* Toggle Vista Detallada vs Compacta */}
           <View className="flex-1 flex-row items-center bg-white p-1 rounded-2xl border border-gray-100">
             <TouchableOpacity
@@ -440,37 +440,39 @@ export const AmortizationScheduleTab: React.FC<AmortizationScheduleTabProps> = (
 
         {/* Chips de filtro por periodos con Scroll Horizontal fluido */}
         {periodChips.length > 1 && (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ gap: 8, paddingHorizontal: 2, paddingBottom: 4 }}
-            className="flex-row"
-          >
-            {periodChips.map((chip) => {
-              const isSel = selectedPeriodFilter === chip.key;
-              return (
-                <TouchableOpacity
-                  key={chip.key}
-                  activeOpacity={0.7}
-                  onPress={() => setSelectedPeriodFilter(chip.key)}
-                  className={`px-4 py-2 rounded-full border ${
-                    isSel
-                      ? 'bg-obsidian border-obsidian'
-                      : 'bg-white border-gray-200'
-                  }`}
-                >
-                  <Text
-                    className={`text-xs font-semibold ${
-                      isSel ? 'text-white font-bold' : 'text-textDark'
+          <View className="mb-3.5">
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ gap: 8, paddingHorizontal: 2, paddingBottom: 4 }}
+              className="flex-row"
+            >
+              {periodChips.map((chip) => {
+                const isSel = selectedPeriodFilter === chip.key;
+                return (
+                  <TouchableOpacity
+                    key={chip.key}
+                    activeOpacity={0.7}
+                    onPress={() => setSelectedPeriodFilter(chip.key)}
+                    className={`px-4 py-2 rounded-full border ${
+                      isSel
+                        ? 'bg-obsidian border-obsidian'
+                        : 'bg-white border-gray-200'
                     }`}
-                    style={{ fontVariant: ['tabular-nums'] }}
                   >
-                    {chip.label}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
+                    <Text
+                      className={`text-xs font-semibold ${
+                        isSel ? 'text-white font-bold' : 'text-textDark'
+                      }`}
+                      style={{ fontVariant: ['tabular-nums'] }}
+                    >
+                      {chip.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
         )}
 
         {/* Barra de Búsqueda Rápida */}
@@ -494,8 +496,8 @@ export const AmortizationScheduleTab: React.FC<AmortizationScheduleTabProps> = (
       </View>
 
       {/* 4. Cronograma Detallado de Cuotas */}
-      <View className="space-y-3">
-        <View className="flex-row items-center justify-between px-1 mb-1">
+      <View className="mb-6">
+        <View className="flex-row items-center justify-between px-1 mb-3.5">
           <View className="flex-row items-center gap-1.5">
             <View className="w-2 h-2 rounded-full bg-[#F59E0B]" />
             <Text className="text-xs font-bold uppercase tracking-wider text-textMutedDark">
