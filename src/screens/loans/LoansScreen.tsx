@@ -142,16 +142,12 @@ export const LoansScreen: React.FC = () => {
       >
         <View className="flex-row items-center justify-between">
           <View className="flex-row items-center gap-3">
-            <View className="relative w-10 h-10 rounded-full bg-[#121316] items-center justify-center">
-              <Text className="text-white font-black text-sm tracking-wide">A</Text>
-              <View className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-[#F59E0B] rounded-full border-2 border-white" />
+            <View className="w-10 h-10 rounded-full bg-[#121316] items-center justify-center">
+              <Text className="text-white font-black text-base tracking-wide">A</Text>
             </View>
             <View>
-              <Text className="text-lg font-black text-textDark leading-tight tracking-tight">
-                Aura Financial
-              </Text>
-              <Text className="text-xs font-semibold text-textMutedDark">
-                Préstamos & Amortización
+              <Text className="text-2xl font-black text-textDark tracking-tight">
+                Préstamos y Amortización
               </Text>
             </View>
           </View>

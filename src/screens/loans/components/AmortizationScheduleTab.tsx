@@ -1,6 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
+  ActivityIndicator,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
@@ -25,7 +27,12 @@ export const AmortizationScheduleTab: React.FC<AmortizationScheduleTabProps> = (
   // Por defecto: solo ver las 5 primeras y la última (resumida)
   const [showAllInstallments, setShowAllInstallments] = useState<boolean>(false);
 
-  // Period chips dinámicos según el plazo total
+  // Estados de feedback y carga no bloqueante
+  const [isTogglingAll, setIsTogglingAll] = useState<boolean>(false);
+  const [isChangingMode, setIsChangingMode] = useState<boolean>(false);
+  const [visibleBatchCount, setVisibleBatchCount] = useState<number>(30);
+
+  // Period chips dinámicos según el plazo total con soporte para todos los años
   const periodChips = useMemo(() => {
     if (!result || result.schedule.length === 0) return [];
 
@@ -44,13 +51,13 @@ export const AmortizationScheduleTab: React.FC<AmortizationScheduleTabProps> = (
         });
       }
     } else if (result.frequency === 'biweekly') {
-      const semesters = Math.ceil(result.term / 12);
-      for (let s = 1; s <= semesters; s++) {
-        const start = (s - 1) * 12 + 1;
-        const end = Math.min(result.term, s * 12);
+      const years = Math.ceil(result.term / 24);
+      for (let y = 1; y <= years; y++) {
+        const start = (y - 1) * 24 + 1;
+        const end = Math.min(result.term, y * 24);
         chips.push({
-          key: `sem_${s}`,
-          label: `Semestre ${s} (${start}-${end})`,
+          key: `year_${y}`,
+          label: `Año ${y} (${start}-${end})`,
         });
       }
     } else if (result.frequency === 'quarterly') {
@@ -76,16 +83,10 @@ export const AmortizationScheduleTab: React.FC<AmortizationScheduleTabProps> = (
       // Filtro por chip de periodo
       if (selectedPeriodFilter.startsWith('year_')) {
         const yearNum = parseInt(selectedPeriodFilter.replace('year_', ''), 10);
-        const perYear = result.frequency === 'quarterly' ? 4 : 12;
+        const perYear =
+          result.frequency === 'biweekly' ? 24 : result.frequency === 'quarterly' ? 4 : 12;
         const start = (yearNum - 1) * perYear + 1;
         const end = yearNum * perYear;
-        if (row.installmentNumber < start || row.installmentNumber > end) {
-          return false;
-        }
-      } else if (selectedPeriodFilter.startsWith('sem_')) {
-        const semNum = parseInt(selectedPeriodFilter.replace('sem_', ''), 10);
-        const start = (semNum - 1) * 12 + 1;
-        const end = semNum * 12;
         if (row.installmentNumber < start || row.installmentNumber > end) {
           return false;
         }
@@ -96,7 +97,8 @@ export const AmortizationScheduleTab: React.FC<AmortizationScheduleTabProps> = (
         const q = searchQuery.toLowerCase().trim();
         const numStr = String(row.installmentNumber);
         const padNumStr = String(row.installmentNumber).padStart(2, '0');
-        const matchNum = numStr.includes(q) || padNumStr.includes(q) || `cuota ${numStr}`.includes(q);
+        const matchNum =
+          numStr.includes(q) || padNumStr.includes(q) || `cuota ${numStr}`.includes(q);
         const matchDate = row.dueDate.toLowerCase().includes(q);
         if (!matchNum && !matchDate) {
           return false;
@@ -107,10 +109,53 @@ export const AmortizationScheduleTab: React.FC<AmortizationScheduleTabProps> = (
     });
   }, [result?.schedule, selectedPeriodFilter, searchQuery, result?.frequency]);
 
+  // Reiniciar lote visible al cambiar filtros o búsqueda
+  useEffect(() => {
+    setVisibleBatchCount(30);
+  }, [selectedPeriodFilter, searchQuery]);
+
+  // Carga progresiva por lotes (chunking) cuando se visualizan todas las cuotas
+  useEffect(() => {
+    if (showAllInstallments && visibleBatchCount < filteredSchedule.length) {
+      const timer = setTimeout(() => {
+        setVisibleBatchCount((prev) => Math.min(filteredSchedule.length, prev + 30));
+      }, 40);
+      return () => clearTimeout(timer);
+    }
+  }, [showAllInstallments, visibleBatchCount, filteredSchedule.length]);
+
+  // Handler no bloqueante con spinner para alternar "Todas" vs "1-5 y fin"
+  const handleToggleShowAll = () => {
+    if (!showAllInstallments) {
+      setIsTogglingAll(true);
+      setTimeout(() => {
+        setShowAllInstallments(true);
+        setIsTogglingAll(false);
+      }, 40);
+    } else {
+      setShowAllInstallments(false);
+      setVisibleBatchCount(30);
+    }
+  };
+
+  // Handler no bloqueante para alternar Vista Detallada vs Compacta
+  const handleToggleCompact = (compact: boolean) => {
+    if (compact === isCompact) return;
+    if (filteredSchedule.length > 20 && showAllInstallments) {
+      setIsChangingMode(true);
+      setTimeout(() => {
+        setIsCompact(compact);
+        setIsChangingMode(false);
+      }, 40);
+    } else {
+      setIsCompact(compact);
+    }
+  };
+
   // Estado vacío si no hay cálculo o los valores son 0
   if (!result || result.amount <= 0 || result.schedule.length === 0) {
     return (
-      <View className="space-y-4 pb-8">
+      <View className="space-y-5 pb-8">
         <View className="pt-1 pb-1 px-0.5">
           <Text className="text-3xl font-extrabold text-textDark tracking-tight">
             Tabla de Amortización
@@ -132,17 +177,24 @@ export const AmortizationScheduleTab: React.FC<AmortizationScheduleTabProps> = (
     );
   }
 
+  // Lista a renderizar considerando lote progresivo
+  const isPeriodFilterActive = selectedPeriodFilter !== 'all';
+  const shouldShowAllDirectly = isPeriodFilterActive || showAllInstallments || filteredSchedule.length <= 6;
+  const itemsToRender = shouldShowAllDirectly
+    ? filteredSchedule.slice(0, visibleBatchCount)
+    : [];
+
   return (
-    <View className="space-y-4 pb-8">
+    <View className="space-y-5 pb-8">
       {/* 1. Encabezado de la pestaña y Contexto del Préstamo */}
       <View className="space-y-2 pt-1">
         <View className="flex-row items-center justify-between flex-wrap gap-2">
           <Text className="text-3xl font-extrabold text-textDark tracking-tight">
             Tabla de Amortización
           </Text>
-          <View className="flex-row items-center gap-1 px-2.5 py-1 rounded-full bg-[#121316]">
-            <Ionicons name="checkmark-circle" size={13} color="#F59E0B" />
-            <Text className="text-[11px] font-bold text-white">
+          <View className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#121316]">
+            <Ionicons name="checkmark-circle" size={14} color="#F59E0B" />
+            <Text className="text-xs font-bold text-white">
               {result.system === 'frances'
                 ? 'Método Francés (Cuota Fija)'
                 : 'Método Alemán (Abono Constante)'}
@@ -150,11 +202,11 @@ export const AmortizationScheduleTab: React.FC<AmortizationScheduleTabProps> = (
           </View>
         </View>
 
-        {/* Barra de contexto */}
-        <View className="flex-row items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-gray-100 border border-gray-200/60 flex-wrap mt-1">
-          <Ionicons name="wallet-outline" size={16} color="#F59E0B" />
+        {/* Barra de contexto con mayor legibilidad */}
+        <View className="flex-row items-center gap-2 px-4 py-3 rounded-2xl bg-gray-100 border border-gray-200/70 flex-wrap mt-1">
+          <Ionicons name="wallet-outline" size={18} color="#F59E0B" />
           <Text
-            className="text-xs text-textDark font-medium"
+            className="text-sm text-textDark font-medium"
             style={{ fontVariant: ['tabular-nums'] }}
           >
             <Text className="font-extrabold text-[#121316]">{formatCurrency(result.amount)}</Text> · {result.term} {result.frequency === 'biweekly' ? 'Quincenas' : result.frequency === 'quarterly' ? 'Trimestres' : 'Meses'} · Tasa <Text className="font-bold">{result.annualRate.toFixed(2)}% {result.rateType === 'effective' ? 'E.A.' : 'MV'}</Text> · Cuota Base: <Text className="font-bold text-[#121316]">{formatCurrency(result.baseInstallment)}</Text>
@@ -162,22 +214,22 @@ export const AmortizationScheduleTab: React.FC<AmortizationScheduleTabProps> = (
         </View>
       </View>
 
-      {/* 2. Totales Acumulados (Estilo Hero Card Calculadoras) */}
-      <View className="bg-white rounded-3xl p-5 border border-gray-100 space-y-4">
+      {/* 2. Totales Acumulados (Estilo Hero Card) */}
+      <View className="bg-white rounded-3xl p-6 border border-gray-100 space-y-4">
         <View className="flex-row items-center justify-between">
-          <Text className="text-[11px] font-medium text-textMutedDark tracking-wider uppercase">
+          <Text className="text-xs font-semibold text-textMutedDark tracking-wider uppercase">
             COSTO TOTAL ACUMULADO
           </Text>
-          <View className="flex-row items-center gap-1 bg-emerald-100 px-2.5 py-1 rounded-md">
-            <Ionicons name="shield-checkmark" size={13} color={AURA_COLORS.emeraldGreen} />
-            <Text className="text-[10px] font-bold text-emerald-800">
+          <View className="flex-row items-center gap-1.5 bg-emerald-100 px-3 py-1 rounded-md">
+            <Ionicons name="shield-checkmark" size={14} color={AURA_COLORS.emeraldGreen} />
+            <Text className="text-xs font-bold text-emerald-800">
               100% Liquidable
             </Text>
           </View>
         </View>
 
         <Text
-          className="text-[34px] font-extrabold text-textDark tracking-tight my-1"
+          className="text-4xl font-extrabold text-textDark tracking-tight my-1"
           style={{ fontVariant: ['tabular-nums'] }}
         >
           {formatCurrency(result.totalCost)}
@@ -186,16 +238,16 @@ export const AmortizationScheduleTab: React.FC<AmortizationScheduleTabProps> = (
           Total desembolsado a lo largo de {result.term} cuotas periódicas
         </Text>
 
-        {/* 2 Columnas de métricas en cajas grises */}
+        {/* 2 Columnas de métricas en cajas grises con amplio padding */}
         <View className="flex-row gap-3 my-2">
           {/* 1. Suma Abonos a Capital */}
           <View className="flex-1 bg-gray-50 rounded-2xl p-4">
             <View className="flex-row items-center gap-2 mb-1.5">
-              <View className="w-2 h-2 rounded-full bg-gray-500" />
-              <Text className="text-[13px] font-medium text-gray-700">Capital Amortizado</Text>
+              <View className="w-2.5 h-2.5 rounded-full bg-gray-600" />
+              <Text className="text-sm font-semibold text-gray-700">Capital Amortizado</Text>
             </View>
             <Text
-              className="text-[22px] font-extrabold text-textDark tracking-tight"
+              className="text-2xl font-extrabold text-textDark tracking-tight"
               style={{ fontVariant: ['tabular-nums'] }}
             >
               {formatCurrency(result.totalPrincipal)}
@@ -208,11 +260,11 @@ export const AmortizationScheduleTab: React.FC<AmortizationScheduleTabProps> = (
           {/* 2. Total Intereses */}
           <View className="flex-1 bg-gray-50 rounded-2xl p-4">
             <View className="flex-row items-center gap-2 mb-1.5">
-              <View className="w-2 h-2 rounded-full bg-amber-500" />
-              <Text className="text-[13px] font-medium text-amber-600">Total Intereses</Text>
+              <View className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+              <Text className="text-sm font-semibold text-amber-600">Total Intereses</Text>
             </View>
             <Text
-              className="text-[22px] font-extrabold text-amber-600 tracking-tight"
+              className="text-2xl font-extrabold text-amber-600 tracking-tight"
               style={{ fontVariant: ['tabular-nums'] }}
             >
               {formatCurrency(result.totalInterest)}
@@ -224,17 +276,17 @@ export const AmortizationScheduleTab: React.FC<AmortizationScheduleTabProps> = (
         </View>
 
         {/* Fila secundaria: Seguros y Costos Adicionales */}
-        <View className="bg-gray-50 rounded-2xl p-3.5 flex-row items-center justify-between">
+        <View className="bg-gray-50 rounded-2xl p-4 flex-row items-center justify-between">
           <View>
-            <Text className="text-xs font-medium text-gray-600">
+            <Text className="text-sm font-semibold text-gray-700">
               Seguros y Gastos Adicionales
             </Text>
-            <Text className="text-[10px] text-textMutedDark">
+            <Text className="text-xs text-textMutedDark mt-0.5">
               {formatCurrency(result.totalInsurance)} seguro + {formatCurrency(result.totalOtherCosts)} manejo
             </Text>
           </View>
           <Text
-            className="text-base font-extrabold text-textDark"
+            className="text-lg font-extrabold text-textDark"
             style={{ fontVariant: ['tabular-nums'] }}
           >
             {formatCurrency(result.totalAdditionalCharges)}
@@ -242,7 +294,7 @@ export const AmortizationScheduleTab: React.FC<AmortizationScheduleTabProps> = (
         </View>
 
         {/* Barra de Distribución Proporcional */}
-        <View className="pt-2 border-t border-gray-100 space-y-1.5">
+        <View className="pt-2 border-t border-gray-100 space-y-2">
           <View className="flex-row items-center justify-between text-xs mb-1">
             <Text className="text-xs font-semibold text-textMutedDark">
               Distribución Total del Flujo
@@ -251,7 +303,7 @@ export const AmortizationScheduleTab: React.FC<AmortizationScheduleTabProps> = (
               className="text-xs font-extrabold text-[#121316]"
               style={{ fontVariant: ['tabular-nums'] }}
             >
-              Saldo Final: $0.00
+              Saldo Final: $ 0.00
             </Text>
           </View>
 
@@ -274,7 +326,7 @@ export const AmortizationScheduleTab: React.FC<AmortizationScheduleTabProps> = (
             <View className="flex-row items-center gap-1.5">
               <View className="w-2.5 h-2.5 rounded-full bg-[#121316]" />
               <Text
-                className="text-[11px] font-bold text-textDark"
+                className="text-xs font-bold text-textDark"
                 style={{ fontVariant: ['tabular-nums'] }}
               >
                 Capital ({result.summary.capitalPercentage}%)
@@ -283,7 +335,7 @@ export const AmortizationScheduleTab: React.FC<AmortizationScheduleTabProps> = (
             <View className="flex-row items-center gap-1.5">
               <View className="w-2.5 h-2.5 rounded-full bg-[#F59E0B]" />
               <Text
-                className="text-[11px] font-bold text-textDark"
+                className="text-xs font-bold text-textDark"
                 style={{ fontVariant: ['tabular-nums'] }}
               >
                 Interés ({result.summary.interestPercentage}%)
@@ -292,7 +344,7 @@ export const AmortizationScheduleTab: React.FC<AmortizationScheduleTabProps> = (
             <View className="flex-row items-center gap-1.5">
               <View className="w-2.5 h-2.5 rounded-full bg-gray-400" />
               <Text
-                className="text-[11px] font-medium text-textMutedDark"
+                className="text-xs font-medium text-textMutedDark"
                 style={{ fontVariant: ['tabular-nums'] }}
               >
                 Gastos ({result.summary.chargesPercentage}%)
@@ -310,14 +362,14 @@ export const AmortizationScheduleTab: React.FC<AmortizationScheduleTabProps> = (
           <View className="flex-1 flex-row items-center bg-white p-1 rounded-2xl border border-gray-100">
             <TouchableOpacity
               activeOpacity={0.8}
-              onPress={() => setIsCompact(false)}
-              className={`flex-1 py-2 px-2.5 rounded-xl flex-row items-center justify-center gap-1 ${
+              onPress={() => handleToggleCompact(false)}
+              className={`flex-1 py-2.5 px-3 rounded-xl flex-row items-center justify-center gap-1.5 ${
                 !isCompact ? 'bg-obsidian' : 'bg-transparent'
               }`}
             >
               <Ionicons
                 name="albums-outline"
-                size={14}
+                size={15}
                 color={!isCompact ? '#F59E0B' : AURA_COLORS.textMutedDark}
               />
               <Text
@@ -331,14 +383,14 @@ export const AmortizationScheduleTab: React.FC<AmortizationScheduleTabProps> = (
 
             <TouchableOpacity
               activeOpacity={0.8}
-              onPress={() => setIsCompact(true)}
-              className={`flex-1 py-2 px-2.5 rounded-xl flex-row items-center justify-center gap-1 ${
+              onPress={() => handleToggleCompact(true)}
+              className={`flex-1 py-2.5 px-3 rounded-xl flex-row items-center justify-center gap-1.5 ${
                 isCompact ? 'bg-obsidian' : 'bg-transparent'
               }`}
             >
               <Ionicons
                 name="list-outline"
-                size={14}
+                size={15}
                 color={isCompact ? '#F59E0B' : AURA_COLORS.textMutedDark}
               />
               <Text
@@ -351,36 +403,49 @@ export const AmortizationScheduleTab: React.FC<AmortizationScheduleTabProps> = (
             </TouchableOpacity>
           </View>
 
-          {/* Toggle Ver Todas vs Resumida (si hay más de 6 cuotas) */}
-          {filteredSchedule.length > 6 && (
+          {/* Toggle Ver Todas vs Resumida (con Spinner inmediato) */}
+          {filteredSchedule.length > 6 && !isPeriodFilterActive && (
             <TouchableOpacity
               activeOpacity={0.8}
-              onPress={() => setShowAllInstallments(!showAllInstallments)}
-              className={`py-2 px-3 rounded-2xl flex-row items-center justify-center gap-1.5 border ${
+              onPress={handleToggleShowAll}
+              disabled={isTogglingAll}
+              className={`py-2.5 px-3.5 rounded-2xl flex-row items-center justify-center gap-1.5 border ${
                 showAllInstallments
                   ? 'bg-obsidian border-obsidian'
                   : 'bg-white border-gray-100'
               }`}
             >
-              <Ionicons
-                name={showAllInstallments ? 'eye-outline' : 'eye-off-outline'}
-                size={15}
-                color={showAllInstallments ? '#FFFFFF' : AURA_COLORS.textDark}
-              />
+              {isTogglingAll ? (
+                <ActivityIndicator
+                  size="small"
+                  color={showAllInstallments ? '#FFFFFF' : '#121316'}
+                />
+              ) : (
+                <Ionicons
+                  name={showAllInstallments ? 'eye-outline' : 'eye-off-outline'}
+                  size={15}
+                  color={showAllInstallments ? '#FFFFFF' : AURA_COLORS.textDark}
+                />
+              )}
               <Text
                 className={`text-xs font-bold ${
                   showAllInstallments ? 'text-white' : 'text-textDark'
                 }`}
               >
-                {showAllInstallments ? 'Todas' : '1-5 y fin'}
+                {isTogglingAll ? 'Cargando...' : showAllInstallments ? 'Todas' : '1-5 y fin'}
               </Text>
             </TouchableOpacity>
           )}
         </View>
 
-        {/* Chips de filtro por periodos */}
+        {/* Chips de filtro por periodos con Scroll Horizontal fluido */}
         {periodChips.length > 1 && (
-          <View className="flex-row gap-2 overflow-x-auto pb-1">
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ gap: 8, paddingHorizontal: 2, paddingBottom: 4 }}
+            className="flex-row"
+          >
             {periodChips.map((chip) => {
               const isSel = selectedPeriodFilter === chip.key;
               return (
@@ -388,7 +453,7 @@ export const AmortizationScheduleTab: React.FC<AmortizationScheduleTabProps> = (
                   key={chip.key}
                   activeOpacity={0.7}
                   onPress={() => setSelectedPeriodFilter(chip.key)}
-                  className={`px-3.5 py-1.5 rounded-full border ${
+                  className={`px-4 py-2 rounded-full border ${
                     isSel
                       ? 'bg-obsidian border-obsidian'
                       : 'bg-white border-gray-200'
@@ -405,23 +470,23 @@ export const AmortizationScheduleTab: React.FC<AmortizationScheduleTabProps> = (
                 </TouchableOpacity>
               );
             })}
-          </View>
+          </ScrollView>
         )}
 
         {/* Barra de Búsqueda Rápida */}
         <View className="relative w-full">
-          <View className="flex-row items-center bg-white rounded-2xl border border-gray-100 px-3.5 h-11">
-            <Ionicons name="search" size={17} color={AURA_COLORS.textMutedDark} />
+          <View className="flex-row items-center bg-white rounded-2xl border border-gray-100 px-4 h-12">
+            <Ionicons name="search" size={18} color={AURA_COLORS.textMutedDark} />
             <TextInput
               value={searchQuery}
               onChangeText={setSearchQuery}
               placeholder="Buscar cuota # o fecha..."
               placeholderTextColor="#9CA3AF"
-              className="flex-1 ml-2 text-xs font-medium text-textDark"
+              className="flex-1 ml-2.5 text-sm font-medium text-textDark"
             />
             {searchQuery.length > 0 && (
               <TouchableOpacity onPress={() => setSearchQuery('')}>
-                <Ionicons name="close-circle" size={16} color="#9CA3AF" />
+                <Ionicons name="close-circle" size={18} color="#9CA3AF" />
               </TouchableOpacity>
             )}
           </View>
@@ -434,18 +499,28 @@ export const AmortizationScheduleTab: React.FC<AmortizationScheduleTabProps> = (
           <View className="flex-row items-center gap-1.5">
             <View className="w-2 h-2 rounded-full bg-[#F59E0B]" />
             <Text className="text-xs font-bold uppercase tracking-wider text-textMutedDark">
-              Plan de Pagos
+              Plan de Pagos {isPeriodFilterActive && `· Filtrado por ${periodChips.find((c) => c.key === selectedPeriodFilter)?.label ?? ''}`}
             </Text>
           </View>
           <Text
-            className="text-[11px] font-semibold text-textMutedDark"
+            className="text-xs font-semibold text-textMutedDark"
             style={{ fontVariant: ['tabular-nums'] }}
           >
             {filteredSchedule.length} Cuotas
           </Text>
         </View>
 
-        {/* Lista de cuotas con regla: 5 primeras y última por defecto */}
+        {/* Indicador de cambio de modo si está en proceso */}
+        {isChangingMode && (
+          <View className="py-4 items-center justify-center">
+            <ActivityIndicator size="small" color="#F59E0B" />
+            <Text className="text-xs text-textMutedDark mt-2">
+              Actualizando vista...
+            </Text>
+          </View>
+        )}
+
+        {/* Lista de cuotas */}
         {(() => {
           if (filteredSchedule.length === 0) {
             return (
@@ -461,24 +536,39 @@ export const AmortizationScheduleTab: React.FC<AmortizationScheduleTabProps> = (
             );
           }
 
-          if (showAllInstallments || filteredSchedule.length <= 6) {
-            return filteredSchedule.map((row) => (
-              <AmortizationCardRow
-                key={row.installmentNumber}
-                row={row}
-                isLast={row.installmentNumber === result.schedule.length}
-                isCompact={isCompact}
-              />
-            ));
+          // Si el filtro de periodo está activo, o el usuario seleccionó "Todas", o son <= 6 cuotas:
+          if (shouldShowAllDirectly) {
+            return (
+              <View>
+                {itemsToRender.map((row) => (
+                  <AmortizationCardRow
+                    key={row.installmentNumber}
+                    row={row}
+                    isLast={row.installmentNumber === result.schedule.length}
+                    isCompact={isCompact}
+                  />
+                ))}
+
+                {/* Si faltan cuotas por cargar del lote progresivo, mostrar feedback sutil */}
+                {visibleBatchCount < filteredSchedule.length && (
+                  <View className="py-3 items-center justify-center flex-row gap-2">
+                    <ActivityIndicator size="small" color="#F59E0B" />
+                    <Text className="text-xs font-semibold text-textMutedDark">
+                      Cargando cuotas restantes ({visibleBatchCount} de {filteredSchedule.length})...
+                    </Text>
+                  </View>
+                )}
+              </View>
+            );
           }
 
-          // Vista por defecto: 5 primeras cuotas + separador interactivo + última cuota
+          // Vista por defecto (Filtro 'all' con showAllInstallments falso): 5 primeras + separador + última
           const firstFive = filteredSchedule.slice(0, 5);
           const lastOne = filteredSchedule[filteredSchedule.length - 1];
           const hiddenCount = filteredSchedule.length - 6;
 
           return (
-            <View className="space-y-2">
+            <View>
               {firstFive.map((row) => (
                 <AmortizationCardRow
                   key={row.installmentNumber}
@@ -488,18 +578,20 @@ export const AmortizationScheduleTab: React.FC<AmortizationScheduleTabProps> = (
                 />
               ))}
 
-              {/* Separador Elipsis Interactivo */}
-              <View className="my-2 py-3.5 px-4 bg-gray-50 rounded-2xl items-center justify-center border border-dashed border-gray-300">
+              {/* Separador Elipsis Interactivo con Spinner en botón */}
+              <View className="my-3 py-4 px-5 bg-gray-50 rounded-2xl items-center justify-center border border-dashed border-gray-300">
                 <Text className="text-xs font-semibold text-textMutedDark text-center">
                   Mostrando 5 primeras cuotas y última ({hiddenCount} cuotas intermedias ocultas)
                 </Text>
                 <TouchableOpacity
                   activeOpacity={0.8}
-                  onPress={() => setShowAllInstallments(true)}
-                  className="mt-2.5 py-1.5 px-4 bg-obsidian rounded-full items-center justify-center"
+                  onPress={handleToggleShowAll}
+                  disabled={isTogglingAll}
+                  className="mt-3 py-2.5 px-5 bg-obsidian rounded-full flex-row items-center justify-center gap-2"
                 >
+                  {isTogglingAll && <ActivityIndicator size="small" color="#FFFFFF" />}
                   <Text className="text-xs font-bold text-white">
-                    Ver todas las {filteredSchedule.length} cuotas
+                    {isTogglingAll ? 'Cargando cuotas...' : `Ver todas las ${filteredSchedule.length} cuotas`}
                   </Text>
                 </TouchableOpacity>
               </View>

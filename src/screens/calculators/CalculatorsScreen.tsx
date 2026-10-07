@@ -53,14 +53,11 @@ export const CalculatorsScreen: React.FC = () => {
         style={{ paddingTop: topInset + 8 }}
       >
         <View className="flex-row items-center gap-3">
-          <View className="w-[38px] h-[38px] rounded-full bg-obsidian items-center justify-center">
+          <View className="w-10 h-10 rounded-full bg-obsidian items-center justify-center">
             <Text className="text-white font-extrabold text-base">A</Text>
           </View>
           <View>
-            <Text className="text-[10px] font-bold text-textMutedDark tracking-wider">
-              AURA FINANCIAL
-            </Text>
-            <Text className="text-xl font-extrabold text-textDark tracking-tight">
+            <Text className="text-2xl font-black text-textDark tracking-tight">
               Calculadoras
             </Text>
           </View>
