@@ -65,7 +65,7 @@ export const LoanSimulatorTab: React.FC<LoanSimulatorTabProps> = ({
   onReset,
 }) => {
   // Helpers para montos y steppers (con mínimo en 0)
-  const handleAmountInc = () => setAmount(Math.min(100000, amount + 1000));
+  const handleAmountInc = () => setAmount(Math.min(1000000000, amount + 1000));
   const handleAmountDec = () => setAmount(Math.max(0, amount - 1000));
 
   const handleRateInc = () => setAnnualRate(Math.min(50, Number((annualRate + 0.25).toFixed(2))));
@@ -298,9 +298,15 @@ export const LoanSimulatorTab: React.FC<LoanSimulatorTabProps> = ({
             </Text>
           </View>
 
-          {/* Stepper táctil Aura */}
+          {/* Stepper táctil Aura con entrada por teclado numérico */}
           <LoanStepper
-            value={formatCurrencyInt(amount)}
+            numericValue={amount}
+            onChangeNumber={setAmount}
+            prefix="$"
+            min={0}
+            max={1000000000}
+            decimals={0}
+            placeholder="0"
             suffix={
               amount > 0 ? (
                 <Ionicons name="checkmark-circle" size={16} color="#F59E0B" />
@@ -386,9 +392,14 @@ export const LoanSimulatorTab: React.FC<LoanSimulatorTabProps> = ({
             </TouchableOpacity>
           </View>
 
-          {/* Stepper de Tasa con ajuste fino ±0.25% */}
+          {/* Stepper de Tasa con ajuste fino ±0.25% y teclado numérico */}
           <LoanStepper
-            value={annualRate.toFixed(2)}
+            numericValue={annualRate}
+            onChangeNumber={setAnnualRate}
+            min={0}
+            max={100}
+            decimals={2}
+            placeholder="0.00"
             suffix={
               <View className="flex-row items-baseline gap-1">
                 <Text className="text-sm font-bold text-textMutedDark">%</Text>
@@ -466,9 +477,14 @@ export const LoanSimulatorTab: React.FC<LoanSimulatorTabProps> = ({
             })}
           </View>
 
-          {/* Stepper de Plazo */}
+          {/* Stepper de Plazo con teclado numérico */}
           <LoanStepper
-            value={term}
+            numericValue={term}
+            onChangeNumber={setTerm}
+            min={0}
+            max={360}
+            decimals={0}
+            placeholder="0"
             suffix={termUnitLabel}
             onDecrement={handleTermDec}
             onIncrement={handleTermInc}
@@ -566,14 +582,15 @@ export const LoanSimulatorTab: React.FC<LoanSimulatorTabProps> = ({
                 </View>
               </View>
 
-              {/* Stepper Seguro Estandarizado */}
+              {/* Stepper Seguro Estandarizado con teclado numérico */}
               <LoanStepper
-                value={
-                  insuranceType === 'fixed'
-                    ? formatCurrency(insuranceValue)
-                    : `${insuranceValue.toFixed(2)} %`
-                }
-                suffix={insuranceType === 'fixed' ? '/ cuota' : 's/ saldo'}
+                numericValue={insuranceValue}
+                onChangeNumber={setInsuranceValue}
+                prefix={insuranceType === 'fixed' ? '$' : undefined}
+                suffix={insuranceType === 'fixed' ? '/ cuota' : '% s/ saldo'}
+                decimals={2}
+                min={0}
+                placeholder="0.00"
                 onDecrement={handleInsDec}
                 onIncrement={handleInsInc}
                 disableDecrement={insuranceValue <= 0}
@@ -591,10 +608,15 @@ export const LoanSimulatorTab: React.FC<LoanSimulatorTabProps> = ({
                 </Text>
               </View>
 
-              {/* Stepper Otros Costos Estandarizado */}
+              {/* Stepper Otros Costos Estandarizado con teclado numérico */}
               <LoanStepper
-                value={formatCurrency(otherCosts)}
+                numericValue={otherCosts}
+                onChangeNumber={setOtherCosts}
+                prefix="$"
                 suffix="/ cuota"
+                decimals={2}
+                min={0}
+                placeholder="0.00"
                 onDecrement={handleFeeDec}
                 onIncrement={handleFeeInc}
                 disableDecrement={otherCosts <= 0}
