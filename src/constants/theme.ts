@@ -1,3 +1,5 @@
+import { TextStyle } from 'react-native';
+
 /**
  * Tokens de Diseño Oficiales - Aura Financial V2.5
  */
@@ -26,8 +28,8 @@ export const AURA_COLORS = {
   textMutedDark: '#71717A',     // Subtítulos sobre superficie clara
 };
 
-export const AURA_TYPOGRAPHY = {
+export const AURA_TYPOGRAPHY: { tabular: TextStyle } = {
   tabular: {
-    fontVariant: ['tabular-nums'] as const,
+    fontVariant: ['tabular-nums'],
   },
 };

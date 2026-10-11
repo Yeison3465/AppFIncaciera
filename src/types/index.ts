@@ -3,3 +3,4 @@
  */
 
 export * from './financial';
+export * from './auth';
