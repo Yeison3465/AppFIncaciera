@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
+  Platform,
   View,
   Text,
   TouchableOpacity,
@@ -55,6 +56,12 @@ export const FinancialStepper: React.FC<FinancialStepperProps> = ({
   const [textValue, setTextValue] = useState<string>(formattedValue);
   const [isEditing, setIsEditing] = useState<boolean>(false);
 
+  useEffect(() => {
+    if (!isEditing) {
+      setTextValue(decimals > 0 ? value.toFixed(decimals) : String(value));
+    }
+  }, [value, decimals, isEditing]);
+
   const displayValue = isEditing ? textValue : formattedValue;
 
   const handleDecrement = () => {
@@ -73,22 +80,47 @@ export const FinancialStepper: React.FC<FinancialStepperProps> = ({
   };
 
   const handleTextChange = (text: string) => {
-    setTextValue(text);
-    const parsed = parseFloat(text.replace(',', '.'));
-    if (!isNaN(parsed) && parsed >= min && (max === undefined || parsed <= max)) {
+    const sanitized = decimals > 0
+      ? text.replace(/[^0-9.,]/g, '')
+      : text.replace(/[^0-9]/g, '');
+
+    setTextValue(sanitized);
+
+    if (sanitized === '' || sanitized === '.' || sanitized === ',') {
+      return;
+    }
+
+    const normalized = sanitized.replace(',', '.');
+    const parsed = parseFloat(normalized);
+    if (!isNaN(parsed) && (max === undefined || parsed <= max)) {
       onChange(parsed);
     }
   };
 
   const handleBlur = () => {
     setIsEditing(false);
-    const parsed = parseFloat(textValue.replace(',', '.'));
+    if (!textValue || textValue.trim() === '') {
+      onChange(min);
+      setTextValue(String(min));
+      return;
+    }
+
+    const normalized = textValue.replace(',', '.');
+    let parsed = parseFloat(normalized);
     if (isNaN(parsed) || parsed < min) {
       onChange(min);
+      setTextValue(String(min));
     } else if (max !== undefined && parsed > max) {
       onChange(max);
+      setTextValue(String(max));
     } else {
+      if (decimals > 0) {
+        parsed = Number(parsed.toFixed(decimals));
+      } else {
+        parsed = Math.round(parsed);
+      }
       onChange(parsed);
+      setTextValue(String(parsed));
     }
   };
 
@@ -167,7 +199,10 @@ export const FinancialStepper: React.FC<FinancialStepperProps> = ({
             onChangeText={handleTextChange}
             onBlur={handleBlur}
             className="text-xl font-extrabold text-textDark text-center py-0 min-w-[70px]"
-            style={{ fontVariant: ['tabular-nums'] }}
+            style={{
+              fontVariant: ['tabular-nums'],
+              ...(Platform.OS === 'web' ? ({ outlineStyle: 'none' } as any) : {}),
+            }}
             selectTextOnFocus
           />
           {suffix && (

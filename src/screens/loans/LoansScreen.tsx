@@ -63,6 +63,7 @@ export const LoansScreen: React.FC = () => {
   const scrollViewRef = useRef<ScrollView>(null);
 
   const [activeTab, setActiveTab] = useState<LoansScreenTab>('simulator');
+  const [hasOpenedSchedule, setHasOpenedSchedule] = useState<boolean>(false);
 
   // Estado del préstamo (Valores predeterminados en 0)
   const [amount, setAmount] = useState<number>(0);
@@ -109,8 +110,11 @@ export const LoansScreen: React.FC = () => {
   ]);
 
   const handleTabChange = (tab: LoansScreenTab) => {
+    if (tab === 'schedule') {
+      setHasOpenedSchedule(true);
+    }
     setActiveTab(tab);
-    scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+    scrollViewRef.current?.scrollTo({ y: 0, animated: false });
   };
 
   const handleReset = () => {
@@ -135,30 +139,26 @@ export const LoansScreen: React.FC = () => {
     <View className="flex-1 bg-[#F8F9FA]">
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
-      {/* HEADER SUPERIOR (Aura Financial) */}
+      {/* HEADER SUPERIOR & SELECTOR DE TABS */}
       <View
-        className="px-5 pb-3 bg-white border-b border-[#F0F0F2]"
+        className="px-5 pb-3.5 bg-white border-b border-[#F0F0F2]"
         style={{ paddingTop: topInset + 8 }}
       >
-        <View className="flex-row items-center justify-between">
+        <View className="flex-row items-center justify-between mb-3.5">
           <View className="flex-row items-center gap-3">
-            <View className="relative w-10 h-10 rounded-full bg-[#121316] items-center justify-center">
-              <Text className="text-white font-black text-sm tracking-wide">A</Text>
-              <View className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-[#F59E0B] rounded-full border-2 border-white" />
+            <View className="w-10 h-10 rounded-full bg-[#121316] items-center justify-center">
+              <Text className="text-white font-black text-base tracking-wide">A</Text>
             </View>
             <View>
-              <Text className="text-lg font-black text-textDark leading-tight tracking-tight">
-                Aura Financial
-              </Text>
-              <Text className="text-xs font-semibold text-textMutedDark">
-                Préstamos & Amortización
+              <Text className="text-2xl font-black text-textDark tracking-tight">
+                Préstamos y Amortización
               </Text>
             </View>
           </View>
         </View>
 
         {/* SELECTOR DE TABS SUPERIOR (Simulador | Amortización) */}
-        <View className="flex-row bg-gray-100 rounded-full p-1 mt-3">
+        <View className="flex-row bg-gray-100 rounded-full p-1">
           <TouchableOpacity
             activeOpacity={0.8}
             onPress={() => handleTabChange('simulator')}
@@ -216,7 +216,8 @@ export const LoansScreen: React.FC = () => {
           paddingBottom: 96, // Espacio para el FloatingIslandTabBar
         }}
       >
-        {activeTab === 'simulator' ? (
+        {/* Pestaña Persistente: Simulador (Keep-Alive) */}
+        <View style={{ display: activeTab === 'simulator' ? 'flex' : 'none' }}>
           <LoanSimulatorTab
             amount={amount}
             setAmount={setAmount}
@@ -240,11 +241,16 @@ export const LoansScreen: React.FC = () => {
             onViewAmortization={() => handleTabChange('schedule')}
             onReset={handleReset}
           />
-        ) : (
-          <AmortizationScheduleTab
-            result={simulationResult}
-            onBackToSimulator={() => handleTabChange('simulator')}
-          />
+        </View>
+
+        {/* Pestaña Persistente: Amortización (Keep-Alive con montaje bajo demanda) */}
+        {hasOpenedSchedule && (
+          <View style={{ display: activeTab === 'schedule' ? 'flex' : 'none' }}>
+            <AmortizationScheduleTab
+              result={simulationResult}
+              onBackToSimulator={() => handleTabChange('simulator')}
+            />
+          </View>
         )}
       </ScrollView>
     </View>

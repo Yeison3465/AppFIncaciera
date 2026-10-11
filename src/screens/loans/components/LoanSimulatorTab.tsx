@@ -65,7 +65,7 @@ export const LoanSimulatorTab: React.FC<LoanSimulatorTabProps> = ({
   onReset,
 }) => {
   // Helpers para montos y steppers (con mínimo en 0)
-  const handleAmountInc = () => setAmount(Math.min(100000, amount + 1000));
+  const handleAmountInc = () => setAmount(Math.min(1000000000, amount + 1000));
   const handleAmountDec = () => setAmount(Math.max(0, amount - 1000));
 
   const handleRateInc = () => setAnnualRate(Math.min(50, Number((annualRate + 0.25).toFixed(2))));
@@ -111,16 +111,16 @@ export const LoanSimulatorTab: React.FC<LoanSimulatorTabProps> = ({
   const hasCalculation = result && result.amount > 0 && result.term > 0;
 
   return (
-    <View className="space-y-4">
+    <View style={{ gap: 16 }}>
       {/* 1. Título principal de la pestaña (Estilo idéntico a Calculadoras) */}
-      <View className="pt-1 pb-1 px-0.5">
+      <View className="mb-4 px-0.5">
         <Text className="text-3xl font-extrabold text-textDark tracking-tight">
           Simulador de Crédito
         </Text>
       </View>
 
       {/* 2. Tarjeta Hero de Resultados (Estilo idéntico a CompoundInterestTab) */}
-      <View className="bg-white rounded-3xl p-5 my-1 border border-gray-100">
+      <View className="bg-white rounded-3xl p-5 mb-5 border border-gray-100">
         <View className="flex-row justify-between items-center mb-3">
           <Text className="text-[11px] font-medium text-textMutedDark tracking-wider uppercase">
             CUOTA ESTIMADA
@@ -210,7 +210,7 @@ export const LoanSimulatorTab: React.FC<LoanSimulatorTabProps> = ({
       </View>
 
       {/* 3. Selector de Sistema de Amortización */}
-      <View className="bg-white border border-gray-100 rounded-2xl p-5 my-1 space-y-3">
+      <View className="bg-white border border-gray-100 rounded-2xl p-5 mb-5" style={{ gap: 12 }}>
         <View className="flex-row items-center justify-between mb-1">
           <Text className="text-lg font-bold text-textDark">
             Sistema de Amortización
@@ -283,7 +283,7 @@ export const LoanSimulatorTab: React.FC<LoanSimulatorTabProps> = ({
       </View>
 
       {/* 4. Formulario de Parámetros del Préstamo */}
-      <View className="bg-white border border-gray-100 rounded-2xl p-5 my-1 space-y-4">
+      <View className="bg-white border border-gray-100 rounded-2xl p-5 mb-5" style={{ gap: 16 }}>
         <View className="flex-row items-center justify-between mb-2">
           <Text className="text-lg font-bold text-textDark">
             Parámetros del Crédito
@@ -298,9 +298,15 @@ export const LoanSimulatorTab: React.FC<LoanSimulatorTabProps> = ({
             </Text>
           </View>
 
-          {/* Stepper táctil Aura */}
+          {/* Stepper táctil Aura con entrada por teclado numérico */}
           <LoanStepper
-            value={formatCurrencyInt(amount)}
+            numericValue={amount}
+            onChangeNumber={setAmount}
+            prefix="$"
+            min={0}
+            max={1000000000}
+            decimals={0}
+            placeholder="0"
             suffix={
               amount > 0 ? (
                 <Ionicons name="checkmark-circle" size={16} color="#F59E0B" />
@@ -386,9 +392,14 @@ export const LoanSimulatorTab: React.FC<LoanSimulatorTabProps> = ({
             </TouchableOpacity>
           </View>
 
-          {/* Stepper de Tasa con ajuste fino ±0.25% */}
+          {/* Stepper de Tasa con ajuste fino ±0.25% y teclado numérico */}
           <LoanStepper
-            value={annualRate.toFixed(2)}
+            numericValue={annualRate}
+            onChangeNumber={setAnnualRate}
+            min={0}
+            max={100}
+            decimals={2}
+            placeholder="0.00"
             suffix={
               <View className="flex-row items-baseline gap-1">
                 <Text className="text-sm font-bold text-textMutedDark">%</Text>
@@ -466,9 +477,14 @@ export const LoanSimulatorTab: React.FC<LoanSimulatorTabProps> = ({
             })}
           </View>
 
-          {/* Stepper de Plazo */}
+          {/* Stepper de Plazo con teclado numérico */}
           <LoanStepper
-            value={term}
+            numericValue={term}
+            onChangeNumber={setTerm}
+            min={0}
+            max={360}
+            decimals={0}
+            placeholder="0"
             suffix={termUnitLabel}
             onDecrement={handleTermDec}
             onIncrement={handleTermInc}
@@ -513,7 +529,7 @@ export const LoanSimulatorTab: React.FC<LoanSimulatorTabProps> = ({
             <Ionicons name="shield-checkmark-outline" size={18} color="#F59E0B" />
           </View>
 
-          <View className="space-y-4">
+          <View style={{ gap: 16 }}>
             {/* Seguro de Vida Deudores */}
             <View>
               <View className="flex-row items-center justify-between mb-2.5">
@@ -566,14 +582,15 @@ export const LoanSimulatorTab: React.FC<LoanSimulatorTabProps> = ({
                 </View>
               </View>
 
-              {/* Stepper Seguro Estandarizado */}
+              {/* Stepper Seguro Estandarizado con teclado numérico */}
               <LoanStepper
-                value={
-                  insuranceType === 'fixed'
-                    ? formatCurrency(insuranceValue)
-                    : `${insuranceValue.toFixed(2)} %`
-                }
-                suffix={insuranceType === 'fixed' ? '/ cuota' : 's/ saldo'}
+                numericValue={insuranceValue}
+                onChangeNumber={setInsuranceValue}
+                prefix={insuranceType === 'fixed' ? '$' : undefined}
+                suffix={insuranceType === 'fixed' ? '/ cuota' : '% s/ saldo'}
+                decimals={2}
+                min={0}
+                placeholder="0.00"
                 onDecrement={handleInsDec}
                 onIncrement={handleInsInc}
                 disableDecrement={insuranceValue <= 0}
@@ -591,10 +608,15 @@ export const LoanSimulatorTab: React.FC<LoanSimulatorTabProps> = ({
                 </Text>
               </View>
 
-              {/* Stepper Otros Costos Estandarizado */}
+              {/* Stepper Otros Costos Estandarizado con teclado numérico */}
               <LoanStepper
-                value={formatCurrency(otherCosts)}
+                numericValue={otherCosts}
+                onChangeNumber={setOtherCosts}
+                prefix="$"
                 suffix="/ cuota"
+                decimals={2}
+                min={0}
+                placeholder="0.00"
                 onDecrement={handleFeeDec}
                 onIncrement={handleFeeInc}
                 disableDecrement={otherCosts <= 0}
@@ -605,12 +627,12 @@ export const LoanSimulatorTab: React.FC<LoanSimulatorTabProps> = ({
       </View>
 
       {/* Tip Card de Optimización de Amortización (Mockup Stitch) */}
-      <View className="my-2">
+      <View className="mb-5">
         <AmortizationTipCard />
       </View>
 
       {/* 5. Botones de Acción */}
-      <View className="space-y-3 pt-2 mb-6">
+      <View className="pt-2 mb-6" style={{ gap: 12 }}>
         {/* Botón Ver Tabla de Amortización (Texto centrado) */}
         <TouchableOpacity
           activeOpacity={0.85}

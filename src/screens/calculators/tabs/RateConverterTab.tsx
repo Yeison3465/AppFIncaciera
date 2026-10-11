@@ -99,7 +99,7 @@ const RateConverterTabComponent: React.FC<RateConverterTabProps> = ({ onCalculat
   if (!rateResult) return null;
 
   return (
-    <View>
+    <View className="space-y-4">
       {/* TÍTULO PRINCIPAL DE LA PESTAÑA */}
       <View className="pt-1 pb-1 px-0.5">
         <Text className="text-3xl font-extrabold text-textDark tracking-tight">
