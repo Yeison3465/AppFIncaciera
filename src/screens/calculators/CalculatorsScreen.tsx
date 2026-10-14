@@ -156,7 +156,7 @@ export const CalculatorsScreen: React.FC = () => {
         scrollEventThrottle={16}
         nestedScrollEnabled={true}
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 96 }}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 80 + bottomInset }}
       >
         <View style={{ display: activeCalcTab === 'compound' ? 'flex' : 'none' }}>
           <CompoundInterestTab onCalculate={handleScrollToTop} />
