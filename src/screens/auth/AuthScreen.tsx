@@ -59,9 +59,9 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
           {/* Selector de Pestaña Segmentado (Login vs Registro) */}
           <AuthSegmentedPill mode={mode} onChangeMode={setMode} />
 
-          {/* Contenedor de Formulario Principal */}
+          {/* Contenedor de Formulario Principal con Keep-Alive */}
           <View className="px-4">
-            {mode === 'login' ? (
+            <View style={{ display: mode === 'login' ? 'flex' : 'none' }}>
               <LoginForm
                 onSuccessLogin={onNavigateHome}
                 onSwitchToRegister={() => setMode('register')}
@@ -69,12 +69,14 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
                   // Acción informativa para restablecer contraseña
                 }}
               />
-            ) : (
+            </View>
+
+            <View style={{ display: mode === 'register' ? 'flex' : 'none' }}>
               <RegisterForm
                 onSwitchToLogin={() => setMode('login')}
                 onSuccessRegister={onNavigateHome}
               />
-            )}
+            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
