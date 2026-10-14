@@ -6,13 +6,14 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { AURA_COLORS } from '../../../constants/theme';
+import { AURA_COLORS, AURA_TYPOGRAPHY } from '../../../constants/theme';
 import { PrimaryButton } from '../../../components';
 import { SocialAuthButtons } from './SocialAuthButtons';
 import {
   checkEmailFormat,
   calculatePasswordStrength,
 } from '../../../utils/authUiHelpers';
+import { useAuth } from '../../../context/AuthContext';
 
 interface RegisterFormProps {
   onSwitchToLogin?: () => void;
@@ -21,27 +22,30 @@ interface RegisterFormProps {
 
 /**
  * Formulario de Registro de Usuario (RF-01 - Stitch 1:1)
- * Protocolo de Apertura Segura: fila doble, username check, stepper de edad,
- * medidor de 4 barras para contraseña, micro-chips de requisitos y nota KYC.
+ * Conectado con Supabase Auth y validaciones en vivo.
  */
 export const RegisterForm: React.FC<RegisterFormProps> = ({
   onSwitchToLogin,
   onSuccessRegister,
 }) => {
-  const [firstName, setFirstName] = useState<string>('Alejandro');
-  const [lastName, setLastName] = useState<string>('Morales');
-  const [username, setUsername] = useState<string>('amorales_fin');
-  const [age, setAge] = useState<number>(28);
-  const [email, setEmail] = useState<string>('alejandro.morales@aurafinancial.com');
-  const [password, setPassword] = useState<string>('AuraSuperKey2025!#');
+  const { register } = useAuth();
+
+  const [firstName, setFirstName] = useState<string>('');
+  const [lastName, setLastName] = useState<string>('');
+  const [username, setUsername] = useState<string>('');
+  const [age, setAge] = useState<number>(25);
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [showAlert, setShowAlert] = useState<boolean>(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isDuplicateAlert, setIsDuplicateAlert] = useState<boolean>(false);
+  const [successNotice, setSuccessNotice] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   // Estados derivados
-  const isUsernameTaken = username.trim().toLowerCase() === 'amorales_fin';
   const isEmailValid = checkEmailFormat(email);
   const strengthState = calculatePasswordStrength(password);
+  const isUsernameValid = username.trim().length >= 3;
 
   const handleAgeMinus = () => {
     if (age > 18) {
@@ -55,14 +59,76 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
     }
   };
 
-  const handleSubmit = () => {
+  const handleDismissAlert = () => {
+    setErrorMessage(null);
+    setIsDuplicateAlert(false);
+  };
+
+  const handleSubmit = async () => {
+    setErrorMessage(null);
+    setIsDuplicateAlert(false);
+    setSuccessNotice(null);
+
+    if (
+      !firstName.trim() ||
+      !lastName.trim() ||
+      !username.trim() ||
+      !email.trim() ||
+      !password
+    ) {
+      setErrorMessage('Todos los campos son obligatorios para el registro.');
+      return;
+    }
+
+    if (!isEmailValid) {
+      setErrorMessage('Por favor ingresa un correo electrónico con formato válido.');
+      return;
+    }
+
+    if (password.length < 8) {
+      setErrorMessage('La contraseña debe contener al menos 8 caracteres.');
+      return;
+    }
+
+    if (strengthState.score < 2) {
+      setErrorMessage('La robustez de la contraseña es demasiado baja. Incluye números o caracteres especiales.');
+      return;
+    }
+
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
+    const result = await register({
+      email,
+      password,
+      firstName,
+      lastName,
+      username,
+      age,
+    });
+    setIsLoading(false);
+
+    if (result.isDuplicate) {
+      setIsDuplicateAlert(true);
+      setErrorMessage(
+        'El correo electrónico ya se encuentra registrado en el sistema. Verifica tus datos o inicia sesión.'
+      );
+      return;
+    }
+
+    if (!result.success) {
+      setErrorMessage(result.error || 'Ocurrió un error al crear la cuenta. Intenta nuevamente.');
+      return;
+    }
+
+    // Registro exitoso
+    if (result.requiresEmailConfirmation) {
+      setSuccessNotice(
+        'Cuenta registrada exitosamente. Hemos enviado un correo de confirmación para activar tu acceso.'
+      );
+    } else {
       if (onSuccessRegister) {
         onSuccessRegister();
       }
-    }, 1000);
+    }
   };
 
   // Color para la barra segmentada según score
@@ -75,6 +141,8 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
     if (strengthState.score === 3) return 'bg-[#84cc16]'; // Lime/Secure
     return 'bg-[#10B981]'; // Emerald Green (Strong)
   };
+
+  const showAlert = Boolean(errorMessage || isDuplicateAlert);
 
   return (
     <View className="bg-white rounded-[20px] p-5 shadow-sm border border-gray-100">
@@ -90,21 +158,46 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
             />
             <View className="flex-1">
               <Text className="text-[11px] font-bold tracking-wider text-red-900 uppercase">
-                Validación de Credenciales
+                {isDuplicateAlert ? 'Correo ya Registrado' : 'Validación de Credenciales'}
               </Text>
               <Text className="text-xs text-red-700 leading-4 mt-0.5">
-                El nombre de usuario{' '}
-                <Text className="font-bold text-red-900">{`'@${username}'`}</Text> o
-                el correo ya se encuentran registrados en el sistema. Verifica o
-                inicia sesión.
+                {errorMessage}
               </Text>
             </View>
           </View>
           <TouchableOpacity
-            onPress={() => setShowAlert(false)}
+            onPress={handleDismissAlert}
             className="p-1 -mr-1 -mt-1"
           >
             <Ionicons name="close" size={18} color="#991B1B" />
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* Banner de Éxito / Confirmación */}
+      {successNotice && (
+        <View className="mb-4 p-3.5 rounded-xl bg-emerald-50 flex-row items-start justify-between border border-emerald-200">
+          <View className="flex-row items-start flex-1 mr-2">
+            <Ionicons
+              name="checkmark-circle"
+              size={20}
+              color={AURA_COLORS.emeraldGreen}
+              style={{ marginRight: 8, marginTop: 1 }}
+            />
+            <View className="flex-1">
+              <Text className="text-[11px] font-bold tracking-wider text-emerald-900 uppercase">
+                Registro Completado
+              </Text>
+              <Text className="text-xs text-emerald-700 leading-4 mt-0.5">
+                {successNotice}
+              </Text>
+            </View>
+          </View>
+          <TouchableOpacity
+            onPress={() => setSuccessNotice(null)}
+            className="p-1 -mr-1 -mt-1"
+          >
+            <Ionicons name="close" size={18} color="#065F46" />
           </TouchableOpacity>
         </View>
       )}
@@ -135,7 +228,10 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
           <View className="h-12 rounded-xl bg-gray-100 px-3.5 justify-center">
             <TextInput
               value={firstName}
-              onChangeText={setFirstName}
+              onChangeText={(text) => {
+                setFirstName(text);
+                if (errorMessage) setErrorMessage(null);
+              }}
               placeholder="Tu nombre"
               placeholderTextColor={AURA_COLORS.textMuted}
               className="text-sm font-semibold text-textDark py-0"
@@ -150,7 +246,10 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
           <View className="h-12 rounded-xl bg-gray-100 px-3.5 justify-center">
             <TextInput
               value={lastName}
-              onChangeText={setLastName}
+              onChangeText={(text) => {
+                setLastName(text);
+                if (errorMessage) setErrorMessage(null);
+              }}
               placeholder="Tu apellido"
               placeholderTextColor={AURA_COLORS.textMuted}
               className="text-sm font-semibold text-textDark py-0"
@@ -165,44 +264,34 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
           <Text className="text-[11px] font-bold tracking-wider text-textMutedDark uppercase">
             Nombre de Usuario
           </Text>
-          {isUsernameTaken ? (
-            <View className="flex-row items-center gap-1">
-              <View className="w-1.5 h-1.5 rounded-full bg-redAlert" />
-              <Text className="text-[11px] font-bold text-redAlert">
-                Ya registrado
-              </Text>
-            </View>
-          ) : (
+          {isUsernameValid ? (
             <View className="flex-row items-center gap-1">
               <View className="w-1.5 h-1.5 rounded-full bg-emeraldGreen" />
               <Text className="text-[11px] font-bold text-emeraldGreen">
-                Disponible
+                Válido
               </Text>
             </View>
+          ) : (
+            <Text className="text-[11px] text-textMuted">
+              Mínimo 3 caracteres
+            </Text>
           )}
         </View>
 
-        <View
-          className={`h-12 rounded-xl bg-gray-100 flex-row items-center px-3.5 border ${
-            isUsernameTaken ? 'border-red-300' : 'border-transparent'
-          }`}
-        >
+        <View className="h-12 rounded-xl bg-gray-100 flex-row items-center px-3.5 border border-transparent">
           <Text className="text-sm font-bold text-textMuted mr-1.5">@</Text>
           <TextInput
             value={username}
-            onChangeText={setUsername}
+            onChangeText={(text) => {
+              setUsername(text);
+              if (errorMessage) setErrorMessage(null);
+            }}
             placeholder="usuario_fin"
             placeholderTextColor={AURA_COLORS.textMuted}
             autoCapitalize="none"
             className="flex-1 text-sm font-semibold text-textDark py-0"
           />
-          {isUsernameTaken ? (
-            <Ionicons
-              name="close-circle"
-              size={19}
-              color={AURA_COLORS.redAlert}
-            />
-          ) : (
+          {isUsernameValid && (
             <Ionicons
               name="checkmark-circle"
               size={19}
@@ -210,11 +299,6 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
             />
           )}
         </View>
-        {isUsernameTaken && (
-          <Text className="text-[11px] font-medium text-redAlert mt-1">
-            Este nombre de usuario no está disponible
-          </Text>
-        )}
       </View>
 
       {/* Campo: Edad (Años) con Stepper Numérico Aura */}
@@ -229,22 +313,20 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
         </View>
 
         <View className="p-2 rounded-xl bg-gray-100 flex-row items-center justify-between">
-          {/* Botón Decrementar */}
           <TouchableOpacity
             activeOpacity={0.8}
             onPress={handleAgeMinus}
             disabled={age <= 18}
-            className="w-10 h-10 rounded-full bg-white shadow-xs items-center justify-center"
+            className="w-10 h-10 rounded-full bg-white border border-gray-200/60 shadow-sm items-center justify-center"
             style={{ opacity: age <= 18 ? 0.4 : 1 }}
           >
             <Ionicons name="remove" size={19} color={AURA_COLORS.textDark} />
           </TouchableOpacity>
 
-          {/* Valor Central con números tabulares */}
           <View className="flex-row items-center gap-2">
             <Text
               className="text-xl font-extrabold text-textDark"
-              style={{ fontVariant: ['tabular-nums'] }}
+              style={AURA_TYPOGRAPHY.tabular}
             >
               {age}
             </Text>
@@ -260,12 +342,11 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
             </View>
           </View>
 
-          {/* Botón Incrementar */}
           <TouchableOpacity
             activeOpacity={0.8}
             onPress={handleAgePlus}
             disabled={age >= 99}
-            className="w-10 h-10 rounded-full bg-white shadow-xs items-center justify-center"
+            className="w-10 h-10 rounded-full bg-white border border-gray-200/60 shadow-sm items-center justify-center"
             style={{ opacity: age >= 99 ? 0.4 : 1 }}
           >
             <Ionicons name="add" size={19} color={AURA_COLORS.textDark} />
@@ -302,7 +383,11 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
           />
           <TextInput
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(text) => {
+              setEmail(text);
+              if (errorMessage) setErrorMessage(null);
+              if (isDuplicateAlert) setIsDuplicateAlert(false);
+            }}
             placeholder="correo@ejemplo.com"
             placeholderTextColor={AURA_COLORS.textMuted}
             keyboardType="email-address"
@@ -349,7 +434,10 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
           />
           <TextInput
             value={password}
-            onChangeText={setPassword}
+            onChangeText={(text) => {
+              setPassword(text);
+              if (errorMessage) setErrorMessage(null);
+            }}
             placeholder="••••••••••••"
             placeholderTextColor={AURA_COLORS.textMuted}
             secureTextEntry={!showPassword}
@@ -380,9 +468,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
         <View className="flex-row flex-wrap gap-1.5 mb-1.5">
           <View
             className={`flex-row items-center gap-1 px-2 py-0.5 rounded-full ${
-              strengthState.hasLength
-                ? 'bg-emeraldGreenLight text-emeraldGreen'
-                : 'bg-gray-100'
+              strengthState.hasLength ? 'bg-emeraldGreenLight' : 'bg-gray-100'
             }`}
           >
             <Ionicons
@@ -407,9 +493,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
 
           <View
             className={`flex-row items-center gap-1 px-2 py-0.5 rounded-full ${
-              strengthState.hasNumber
-                ? 'bg-emeraldGreenLight text-emeraldGreen'
-                : 'bg-gray-100'
+              strengthState.hasNumber ? 'bg-emeraldGreenLight' : 'bg-gray-100'
             }`}
           >
             <Ionicons
@@ -434,9 +518,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
 
           <View
             className={`flex-row items-center gap-1 px-2 py-0.5 rounded-full ${
-              strengthState.hasSpecialChar
-                ? 'bg-emeraldGreenLight text-emeraldGreen'
-                : 'bg-gray-100'
+              strengthState.hasSpecialChar ? 'bg-emeraldGreenLight' : 'bg-gray-100'
             }`}
           >
             <Ionicons

@@ -65,6 +65,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
             {mode === 'login' ? (
               <LoginForm
                 onSuccessLogin={onNavigateHome}
+                onSwitchToRegister={() => setMode('register')}
                 onForgotPasswordPress={() => {
                   // Acción informativa para restablecer contraseña
                 }}

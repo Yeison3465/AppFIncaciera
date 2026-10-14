@@ -10,37 +10,71 @@ import { AURA_COLORS } from '../../../constants/theme';
 import { PrimaryButton } from '../../../components';
 import { SocialAuthButtons } from './SocialAuthButtons';
 import { checkEmailFormat } from '../../../utils/authUiHelpers';
+import { useAuth } from '../../../context/AuthContext';
 
 interface LoginFormProps {
   onForgotPasswordPress?: () => void;
   onSuccessLogin?: () => void;
+  onSwitchToRegister?: () => void;
 }
 
 /**
  * Formulario de Inicio de Sesión (RF-02 - Stitch 1:1)
- * Incluye alerta de credenciales, feedback de formato en vivo y botones rápidos.
+ * Conectado a Supabase Auth y persistencia segura.
  */
 export const LoginForm: React.FC<LoginFormProps> = ({
   onForgotPasswordPress,
   onSuccessLogin,
+  onSwitchToRegister,
 }) => {
-  const [email, setEmail] = useState<string>('usuario@aurafinancial.com');
-  const [password, setPassword] = useState<string>('Finanzas2025#');
+  const { login, isExpiredSession, clearExpiredAlert } = useAuth();
+
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [showAlert, setShowAlert] = useState<boolean>(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const isEmailValid = checkEmailFormat(email);
 
-  const handleSubmit = () => {
+  const handleDismissAlert = () => {
+    setErrorMessage(null);
+    clearExpiredAlert();
+  };
+
+  const handleSubmit = async () => {
+    setErrorMessage(null);
+
+    if (!email.trim() || !password) {
+      setErrorMessage('Por favor ingresa tu correo y contraseña.');
+      return;
+    }
+
+    if (!isEmailValid) {
+      setErrorMessage('Por favor ingresa un formato de correo electrónico válido.');
+      return;
+    }
+
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
+    const result = await login(email, password);
+    setIsLoading(false);
+
+    if (result.success) {
       if (onSuccessLogin) {
         onSuccessLogin();
       }
-    }, 1000);
+    } else {
+      setErrorMessage(
+        result.error || 'Credenciales no reconocidas. Verifica tu correo y contraseña para reintentar el acceso.'
+      );
+    }
   };
+
+  const showAlert = Boolean(errorMessage || isExpiredSession);
+  const alertTitle = isExpiredSession ? 'Sesión Expirada (24 Horas)' : 'Acceso no verificado';
+  const alertDescription = isExpiredSession
+    ? 'Por políticas de seguridad bancaria, tu sesión ha finalizado tras 24 horas. Por favor ingresa nuevamente.'
+    : errorMessage;
 
   return (
     <View className="bg-white rounded-[20px] p-5 shadow-sm border border-gray-100">
@@ -56,16 +90,15 @@ export const LoginForm: React.FC<LoginFormProps> = ({
             />
             <View className="flex-1">
               <Text className="text-xs font-bold text-red-900">
-                Acceso no verificado
+                {alertTitle}
               </Text>
               <Text className="text-xs text-red-700 leading-4 mt-0.5">
-                Credenciales no reconocidas. Verifica tu correo y contraseña para
-                reintentar el acceso.
+                {alertDescription}
               </Text>
             </View>
           </View>
           <TouchableOpacity
-            onPress={() => setShowAlert(false)}
+            onPress={handleDismissAlert}
             className="p-1 -mr-1 -mt-1"
           >
             <Ionicons name="close" size={18} color="#991B1B" />
@@ -93,7 +126,10 @@ export const LoginForm: React.FC<LoginFormProps> = ({
           />
           <TextInput
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(text) => {
+              setEmail(text);
+              if (errorMessage) setErrorMessage(null);
+            }}
             placeholder="correo@ejemplo.com"
             placeholderTextColor={AURA_COLORS.textMuted}
             keyboardType="email-address"
@@ -135,7 +171,10 @@ export const LoginForm: React.FC<LoginFormProps> = ({
           />
           <TextInput
             value={password}
-            onChangeText={setPassword}
+            onChangeText={(text) => {
+              setPassword(text);
+              if (errorMessage) setErrorMessage(null);
+            }}
             placeholder="••••••••••••"
             placeholderTextColor={AURA_COLORS.textMuted}
             secureTextEntry={!showPassword}
@@ -165,6 +204,21 @@ export const LoginForm: React.FC<LoginFormProps> = ({
 
       {/* Botones Sociales */}
       <SocialAuthButtons dividerText="o continúa con" />
+
+      {/* Enlace para cambiar a Registro */}
+      <View className="flex-row items-center justify-center mt-5">
+        <Text className="text-xs text-textMutedDark">
+          ¿No tienes una cuenta aún?
+        </Text>
+        <TouchableOpacity onPress={onSwitchToRegister} className="ml-1.5">
+          <Text
+            className="text-xs font-bold"
+            style={{ color: AURA_COLORS.amberGold }}
+          >
+            Regístrate
+          </Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };

@@ -10,6 +10,8 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AURA_COLORS } from '../../constants/theme';
+import { useRouter } from 'expo-router';
+import { useAuth } from '../../context/AuthContext';
 import {
   CompoundInterestTab,
   RateConverterTab,
@@ -24,9 +26,16 @@ type CalculatorTab = 'compound' | 'simple' | 'rates';
  * Arquitectura modular y estilizado 100% con clases de Tailwind CSS / NativeWind.
  */
 export const CalculatorsScreen: React.FC = () => {
+  const router = useRouter();
+  const { logout } = useAuth();
   const insets = useSafeAreaInsets();
   const scrollViewRef = useRef<ScrollView>(null);
   const [activeCalcTab, setActiveCalcTab] = useState<CalculatorTab>('compound');
+
+  const handleLogout = useCallback(async () => {
+    await logout();
+    router.replace('/(auth)/login');
+  }, [logout, router]);
 
   const handleScrollToTop = useCallback(() => {
     scrollViewRef.current?.scrollTo({ y: 0, animated: true });
@@ -63,6 +72,15 @@ export const CalculatorsScreen: React.FC = () => {
               </Text>
             </View>
           </View>
+
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={handleLogout}
+            className="w-10 h-10 rounded-full bg-gray-100 items-center justify-center border border-gray-200"
+            accessibilityLabel="Cerrar Sesión"
+          >
+            <Ionicons name="log-out-outline" size={19} color="#DC2626" />
+          </TouchableOpacity>
         </View>
 
         {/* SELECTOR DE TABS SUPERIOR (Compuesto | Simple | Tasas) */}
