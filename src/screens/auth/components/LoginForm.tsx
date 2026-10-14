@@ -207,20 +207,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({
         onPress={() => setRememberMe(!rememberMe)}
         className="flex-row items-center mb-5"
       >
-        <View
-          className={`w-5 h-5 rounded-md items-center justify-center border mr-2.5 ${
-            rememberMe
-              ? 'bg-obsidian border-obsidian'
-              : 'bg-gray-100 border-gray-300'
-          }`}
-        >
-          {rememberMe && (
-            <Ionicons name="checkmark" size={14} color="#FFFFFF" />
-          )}
-        </View>
-        <Text className="text-xs font-medium text-textDark">
-          Recordar mi cuenta en este dispositivo
-        </Text>
+        
+      
       </TouchableOpacity>
 
       {/* Botón Principal: Obsidian 52px */}
@@ -247,16 +235,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
       </View>
 
       {/* Micro-badge de seguridad y protección */}
-      <View className="flex-row items-center justify-center gap-1.5 mt-5 pt-4 border-t border-gray-100">
-        <Ionicons
-          name="shield-checkmark"
-          size={14}
-          color={AURA_COLORS.emeraldGreen}
-        />
-        <Text className="text-[11px] font-medium text-textMutedDark">
-          Acceso protegido con cifrado de alta seguridad
-        </Text>
-      </View>
+      
     </View>
   );
 };
