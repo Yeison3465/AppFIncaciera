@@ -80,7 +80,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
     <View className="bg-white rounded-[20px] p-5 shadow-sm border border-gray-100">
       {/* Cabecera Interna de Bienvenida */}
       <View className="mb-4">
-        <Text className="text-lg font-extrabold text-textDark tracking-tight">
+        <Text className="text-xl font-extrabold text-textDark tracking-tight text-center pb-3 ">
           Bienvenido de nuevo
         </Text>
         <Text className="text-xs text-textMutedDark mt-0.5 leading-4">

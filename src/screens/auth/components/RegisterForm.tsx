@@ -210,9 +210,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
       <View className="flex-row items-center justify-between pb-4 border-b border-gray-100 mb-4">
         <View>
           <Text className="text-xl font-bold text-textDark">Crear Cuenta</Text>
-          <Text className="text-[11px] font-semibold text-textMutedDark mt-0.5">
-            Fase 3 · Protocolo de Apertura Segura
-          </Text>
+          
         </View>
         <View className="w-10 h-10 rounded-full bg-gray-100 items-center justify-center">
           <Ionicons
