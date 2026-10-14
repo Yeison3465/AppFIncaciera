@@ -71,6 +71,13 @@ describe('Pruebas Funcionales: Validaciones de Registro y Login (RF-01 y RF-02)'
       assert.strictEqual(state.hasNumber, false);
     });
 
+    test('Contraseña numérica o común como 12345678 se clasifica como Débil (score 1)', () => {
+      const state123 = calculatePasswordStrength('12345678');
+      assert.strictEqual(state123.score, 1);
+      assert.strictEqual(state123.level, 'weak');
+      assert.strictEqual(state123.label, 'Débil');
+    });
+
     test('Contraseña con 8+ caracteres y números o caracteres especiales clasifica Media o Segura', () => {
       const stateMedia = calculatePasswordStrength('ClaveSegura#');
       assert.strictEqual(stateMedia.score >= 2, true);

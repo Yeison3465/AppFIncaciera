@@ -13,7 +13,6 @@ import {
   AuthSegmentedPill,
   LoginForm,
   RegisterForm,
-  AuthSecurityFooter,
 } from './components';
 
 interface AuthScreenProps {
@@ -77,9 +76,6 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
               />
             )}
           </View>
-
-          {/* Pie de Pantalla: Certificación SSL 256-Bit e ISO/IEC */}
-          <AuthSecurityFooter />
         </ScrollView>
       </KeyboardAvoidingView>
     </View>

@@ -13,6 +13,7 @@ export interface PasswordValidationState {
   hasLength: boolean; // >= 8 caracteres
   hasNumber: boolean; // contiene dígitos
   hasSpecialChar: boolean; // contiene símbolos (#, $, %, etc.)
+  feedback?: string; // sugerencia o motivo de robustez
 }
 
 export interface LoginFormValues {

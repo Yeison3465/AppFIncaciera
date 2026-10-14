@@ -8,7 +8,6 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { AURA_COLORS } from '../../../constants/theme';
 import { PrimaryButton } from '../../../components';
-import { SocialAuthButtons } from './SocialAuthButtons';
 import { checkEmailFormat } from '../../../utils/authUiHelpers';
 import { useAuth } from '../../../context/AuthContext';
 
@@ -201,9 +200,6 @@ export const LoginForm: React.FC<LoginFormProps> = ({
         loading={isLoading}
         iconName="arrow-forward"
       />
-
-      {/* Botones Sociales */}
-      <SocialAuthButtons dividerText="o continúa con" />
 
       {/* Enlace para cambiar a Registro */}
       <View className="flex-row items-center justify-center mt-5">

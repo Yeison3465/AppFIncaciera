@@ -8,7 +8,6 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { AURA_COLORS, AURA_TYPOGRAPHY } from '../../../constants/theme';
 import { PrimaryButton } from '../../../components';
-import { SocialAuthButtons } from './SocialAuthButtons';
 import {
   checkEmailFormat,
   calculatePasswordStrength,
@@ -33,7 +32,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
   const [firstName, setFirstName] = useState<string>('');
   const [lastName, setLastName] = useState<string>('');
   const [username, setUsername] = useState<string>('');
-  const [age, setAge] = useState<number>(25);
+  const [age, setAge] = useState<number>(18);
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -41,6 +40,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
   const [isDuplicateAlert, setIsDuplicateAlert] = useState<boolean>(false);
   const [successNotice, setSuccessNotice] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [hasSubmitted, setHasSubmitted] = useState<boolean>(false);
 
   // Estados derivados
   const isEmailValid = checkEmailFormat(email);
@@ -65,6 +65,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
   };
 
   const handleSubmit = async () => {
+    setHasSubmitted(true);
     setErrorMessage(null);
     setIsDuplicateAlert(false);
     setSuccessNotice(null);
@@ -91,7 +92,10 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
     }
 
     if (strengthState.score < 2) {
-      setErrorMessage('La robustez de la contraseña es demasiado baja. Incluye números o caracteres especiales.');
+      setErrorMessage(
+        strengthState.feedback ||
+          'La robustez de la contraseña es demasiado baja. Combina letras, números y caracteres especiales.'
+      );
       return;
     }
 
@@ -410,19 +414,28 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
           <Text className="text-[11px] font-bold tracking-wider text-textMutedDark uppercase">
             Contraseña
           </Text>
-          <Text
-            className="text-[11px] font-bold"
-            style={{
-              color:
-                strengthState.score >= 3
-                  ? AURA_COLORS.emeraldGreen
-                  : strengthState.score === 2
-                  ? AURA_COLORS.amberGold
-                  : AURA_COLORS.redAlert,
-            }}
-          >
-            {strengthState.label}
-          </Text>
+          {password.length > 0 ? (
+            <Text
+              className="text-[11px] font-bold"
+              style={{
+                color:
+                  strengthState.score >= 3
+                    ? AURA_COLORS.emeraldGreen
+                    : strengthState.score === 2
+                    ? AURA_COLORS.amberGold
+                    : AURA_COLORS.redAlert,
+              }}
+            >
+              {strengthState.label}
+            </Text>
+          ) : hasSubmitted ? (
+            <Text
+              className="text-[11px] font-bold"
+              style={{ color: AURA_COLORS.redAlert }}
+            >
+              {strengthState.label}
+            </Text>
+          ) : null}
         </View>
 
         <View className="h-12 rounded-xl bg-gray-100 flex-row items-center px-3.5 mb-2">
@@ -568,9 +581,6 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
         loading={isLoading}
         iconName="arrow-forward"
       />
-
-      {/* Botones Sociales */}
-      <SocialAuthButtons dividerText="o regístrate con" />
 
       {/* Enlace para cambiar a Iniciar Sesión */}
       <View className="flex-row items-center justify-center mt-5">

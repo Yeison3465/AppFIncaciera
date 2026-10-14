@@ -42,6 +42,21 @@ describe('Auth UI Helpers - Validaciones de Interfaz y Medidor de Contraseña', 
       assert.equal(res.hasLength, false);
     });
 
+    it('clasifica como Débil contraseñas de solo números, secuenciales o comunes como 12345678', () => {
+      const resSequential = calculatePasswordStrength('12345678');
+      assert.equal(resSequential.score, 1);
+      assert.equal(resSequential.level, 'weak');
+      assert.equal(resSequential.label, 'Débil');
+
+      const resRepeated = calculatePasswordStrength('11111111');
+      assert.equal(resRepeated.score, 1);
+      assert.equal(resRepeated.level, 'weak');
+
+      const resCommon = calculatePasswordStrength('password123');
+      assert.equal(resCommon.score, 1);
+      assert.equal(resCommon.level, 'weak');
+    });
+
     it('clasifica como Media cuando cumple 8 caracteres y números o símbolos', () => {
       const res = calculatePasswordStrength('abcdefgh1');
       assert.equal(res.hasLength, true);
