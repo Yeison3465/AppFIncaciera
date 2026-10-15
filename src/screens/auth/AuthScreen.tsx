@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AuthTabMode } from '../../types/auth';
+import { useToast } from '../../context/ToastContext';
 import {
   AuthHeader,
   AuthSegmentedPill,
@@ -31,6 +32,21 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
 }) => {
   const insets = useSafeAreaInsets();
   const [mode, setMode] = useState<AuthTabMode>(initialMode);
+  const [prefilledEmail, setPrefilledEmail] = useState<string>('');
+  const { showToast } = useToast();
+
+  const handleSuccessRegister = (email?: string) => {
+    if (email) {
+      setPrefilledEmail(email);
+    }
+    setMode('login');
+    showToast({
+      title: '¡Cuenta creada correctamente!',
+      message: 'Se creó la cuenta con éxito. Por favor inicia sesión con tus credenciales.',
+      type: 'success',
+      duration: 4500,
+    });
+  };
 
   return (
     <View
@@ -63,18 +79,16 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
           <View className="px-4">
             <View style={{ display: mode === 'login' ? 'flex' : 'none' }}>
               <LoginForm
+                initialEmail={prefilledEmail}
                 onSuccessLogin={onNavigateHome}
                 onSwitchToRegister={() => setMode('register')}
-                onForgotPasswordPress={() => {
-                  // Acción informativa para restablecer contraseña
-                }}
               />
             </View>
 
             <View style={{ display: mode === 'register' ? 'flex' : 'none' }}>
               <RegisterForm
                 onSwitchToLogin={() => setMode('login')}
-                onSuccessRegister={onNavigateHome}
+                onSuccessRegister={handleSuccessRegister}
               />
             </View>
           </View>

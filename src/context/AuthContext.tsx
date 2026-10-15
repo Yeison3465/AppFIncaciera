@@ -29,6 +29,7 @@ export interface AuthResult {
   error?: string;
   isDuplicate?: boolean;
   requiresEmailConfirmation?: boolean;
+  registeredEmail?: string;
 }
 
 interface AuthContextType {
@@ -49,6 +50,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isExpiredSession, setIsExpiredSession] = useState<boolean>(false);
+  const isRegisteringRef = React.useRef(false);
 
   const clearExpiredAlert = useCallback(() => {
     setIsExpiredSession(false);
@@ -86,7 +88,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           console.error('[AuthContext] Error al obtener sesión inicial:', error);
         }
 
-        if (data.session) {
+        if (data.session && !isRegisteringRef.current) {
           const expired = await verifySessionTimeout();
           if (!expired && mounted) {
             setSession(data.session);
@@ -107,7 +109,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // Escucha de cambios de estado en Supabase Auth
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
-        if (!mounted) return;
+        if (!mounted || isRegisteringRef.current) return;
 
         if (event === 'SIGNED_IN' && newSession) {
           setSession(newSession);
@@ -154,9 +156,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       });
 
       if (error) {
+        const errorMsgLower = error.message.toLowerCase();
+        let friendlyMessage = error.message;
+
+        if (errorMsgLower.includes('email not confirmed')) {
+          friendlyMessage =
+            'Tu correo no ha sido confirmado aún en Supabase. Puedes confirmarlo o desactivar "Confirm email" en Auth > Providers en tu consola de Supabase.';
+        } else if (errorMsgLower.includes('invalid login credentials')) {
+          friendlyMessage =
+            'Credenciales no reconocidas. Verifica tu correo y contraseña para reintentar el acceso.';
+        }
+
         return {
           success: false,
-          error: error.message,
+          error: friendlyMessage,
         };
       }
 
@@ -180,6 +193,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // Registro de Nuevo Usuario
   const register = async (params: RegisterParams): Promise<AuthResult> => {
+    isRegisteringRef.current = true;
     try {
       const trimmedEmail = params.email.trim().toLowerCase();
       const fullName = `${params.firstName.trim()} ${params.lastName.trim()}`.trim();
@@ -225,37 +239,28 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         };
       }
 
-      // Si Supabase otorgó sesión directa inmediatamente
-      if (data.session) {
-        await saveSessionLoginTime(Date.now());
-        setSession(data.session);
-        setUser(data.user);
-        setIsExpiredSession(false);
-        return { success: true };
+      // Cerrar cualquier sesión que Supabase haya creado automáticamente
+      // para asegurar que el usuario sea redirigido al inicio de sesión
+      try {
+        await supabase.auth.signOut();
+        await clearSessionLoginTime();
+      } catch {
+        // Ignorar fallas al cerrar sesión transitoria
       }
+      setSession(null);
+      setUser(null);
 
-      // Si no retornó sesión directa (por ej. si requiriera confirmación), intentar auto-login
-      const autoLogin = await supabase.auth.signInWithPassword({
-        email: trimmedEmail,
-        password: params.password,
-      });
-
-      if (autoLogin.data.session) {
-        await saveSessionLoginTime(Date.now());
-        setSession(autoLogin.data.session);
-        setUser(autoLogin.data.user);
-        setIsExpiredSession(false);
-        return { success: true };
-      }
-
-      // Si requiere confirmación por correo previa
       return {
         success: true,
-        requiresEmailConfirmation: true,
+        registeredEmail: trimmedEmail,
       };
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Error desconocido en el registro';
       return { success: false, error: message };
+    } finally {
+      setTimeout(() => {
+        isRegisteringRef.current = false;
+      }, 500);
     }
   };
 

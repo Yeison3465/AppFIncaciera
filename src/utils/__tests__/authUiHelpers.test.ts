@@ -4,6 +4,7 @@ import {
   checkEmailFormat,
   calculatePasswordStrength,
   validateAgeRange,
+  checkPasswordsMatch,
 } from '../authUiHelpers';
 
 describe('Auth UI Helpers - Validaciones de Interfaz y Medidor de Contraseña', () => {
@@ -88,6 +89,21 @@ describe('Auth UI Helpers - Validaciones de Interfaz y Medidor de Contraseña', 
       assert.equal(validateAgeRange(0), false);
       assert.equal(validateAgeRange(-5), false);
       assert.equal(validateAgeRange(25.5), false);
+    });
+  });
+
+  describe('checkPasswordsMatch', () => {
+    it('valida cuando ambas contraseñas son idénticas', () => {
+      assert.equal(checkPasswordsMatch('Password2025!', 'Password2025!'), true);
+      assert.equal(checkPasswordsMatch('Aura123#', 'Aura123#'), true);
+    });
+
+    it('rechaza cuando las contraseñas difieren o alguna está vacía', () => {
+      assert.equal(checkPasswordsMatch('Password2025!', 'Password2025?'), false);
+      assert.equal(checkPasswordsMatch('Password2025!', 'password2025!'), false);
+      assert.equal(checkPasswordsMatch('Password2025!', ''), false);
+      assert.equal(checkPasswordsMatch('', 'Password2025!'), false);
+      assert.equal(checkPasswordsMatch('', ''), false);
     });
   });
 });

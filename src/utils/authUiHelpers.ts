@@ -153,3 +153,11 @@ export function calculatePasswordStrength(password: string): PasswordValidationS
 export function validateAgeRange(age: number): boolean {
   return Number.isInteger(age) && age >= 18 && age <= 99;
 }
+
+/**
+ * Valida si la contraseña y su confirmación coinciden exactamente.
+ */
+export function checkPasswordsMatch(password: string, confirmPassword: string): boolean {
+  if (!password || !confirmPassword) return false;
+  return password === confirmPassword;
+}

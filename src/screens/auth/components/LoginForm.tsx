@@ -15,6 +15,7 @@ interface LoginFormProps {
   onForgotPasswordPress?: () => void;
   onSuccessLogin?: () => void;
   onSwitchToRegister?: () => void;
+  initialEmail?: string;
 }
 
 /**
@@ -25,15 +26,22 @@ export const LoginForm: React.FC<LoginFormProps> = ({
   onForgotPasswordPress,
   onSuccessLogin,
   onSwitchToRegister,
+  initialEmail,
 }) => {
   const { login, isExpiredSession, clearExpiredAlert } = useAuth();
 
-  const [email, setEmail] = useState<string>('');
+  const [email, setEmail] = useState<string>(initialEmail || '');
   const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [rememberMe, setRememberMe] = useState<boolean>(true);
+
+  React.useEffect(() => {
+    if (initialEmail) {
+      setEmail(initialEmail);
+    }
+  }, [initialEmail]);
 
   const isEmailValid = checkEmailFormat(email);
 
@@ -159,14 +167,16 @@ export const LoginForm: React.FC<LoginFormProps> = ({
           <Text className="text-[11px] font-bold tracking-wider text-textMutedDark uppercase">
             Contraseña
           </Text>
-          <TouchableOpacity onPress={onForgotPasswordPress}>
-            <Text
-              className="text-[11px] font-bold"
-              style={{ color: AURA_COLORS.amberGold }}
-            >
-              ¿Olvidaste tu contraseña?
-            </Text>
-          </TouchableOpacity>
+          {onForgotPasswordPress ? (
+            <TouchableOpacity onPress={onForgotPasswordPress}>
+              <Text
+                className="text-[11px] font-bold"
+                style={{ color: AURA_COLORS.amberGold }}
+              >
+                ¿Olvidaste tu contraseña?
+              </Text>
+            </TouchableOpacity>
+          ) : null}
         </View>
 
         <View className="h-12 rounded-xl bg-gray-100 flex-row items-center px-3.5 border border-transparent focus:border-gray-300">

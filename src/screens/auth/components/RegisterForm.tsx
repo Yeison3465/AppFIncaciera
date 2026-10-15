@@ -16,7 +16,7 @@ import { useAuth } from '../../../context/AuthContext';
 
 interface RegisterFormProps {
   onSwitchToLogin?: () => void;
-  onSuccessRegister?: () => void;
+  onSuccessRegister?: (email?: string) => void;
 }
 
 /**
@@ -35,7 +35,9 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
   const [age, setAge] = useState<number>(18);
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
+  const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isDuplicateAlert, setIsDuplicateAlert] = useState<boolean>(false);
   const [successNotice, setSuccessNotice] = useState<string | null>(null);
@@ -46,6 +48,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
   const isEmailValid = checkEmailFormat(email);
   const strengthState = calculatePasswordStrength(password);
   const isUsernameValid = username.trim().length >= 3;
+  const isPasswordMatch = password.length > 0 && password === confirmPassword;
 
   const handleAgeMinus = () => {
     if (age > 18) {
@@ -75,7 +78,8 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
       !lastName.trim() ||
       !username.trim() ||
       !email.trim() ||
-      !password
+      !password ||
+      !confirmPassword
     ) {
       setErrorMessage('Todos los campos son obligatorios para el registro.');
       return;
@@ -96,6 +100,11 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
         strengthState.feedback ||
           'La robustez de la contraseña es demasiado baja. Combina letras, números y caracteres especiales.'
       );
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setErrorMessage('Las contraseñas no coinciden. Por favor verifica que ambas sean idénticas.');
       return;
     }
 
@@ -124,14 +133,18 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
     }
 
     // Registro exitoso
-    if (result.requiresEmailConfirmation) {
-      setSuccessNotice(
-        'Cuenta registrada exitosamente. Hemos enviado un correo de confirmación para activar tu acceso.'
-      );
-    } else {
-      if (onSuccessRegister) {
-        onSuccessRegister();
-      }
+    const registeredEmail = result.registeredEmail || email.trim().toLowerCase();
+    setPassword('');
+    setConfirmPassword('');
+    setFirstName('');
+    setLastName('');
+    setUsername('');
+    setEmail('');
+    setErrorMessage(null);
+    setHasSubmitted(false);
+
+    if (onSuccessRegister) {
+      onSuccessRegister(registeredEmail);
     }
   };
 
@@ -558,6 +571,63 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
         <Text className="text-[11px] text-textMutedDark leading-4">
           Cumple con: mín. 8 caracteres, mayúscula, número y símbolo especial.
         </Text>
+      </View>
+
+      {/* Campo: Confirmar Contraseña (Verificación) */}
+      <View className="mb-4">
+        <View className="flex-row items-center justify-between mb-1">
+          <Text className="text-[11px] font-bold tracking-wider text-textMutedDark uppercase">
+            Confirmar Contraseña
+          </Text>
+          {confirmPassword.length > 0 && (
+            <View className="flex-row items-center gap-1">
+              <Ionicons
+                name={isPasswordMatch ? 'checkmark-circle' : 'alert-circle'}
+                size={14}
+                color={isPasswordMatch ? AURA_COLORS.emeraldGreen : AURA_COLORS.redAlert}
+              />
+              <Text
+                className="text-[11px] font-bold"
+                style={{
+                  color: isPasswordMatch ? AURA_COLORS.emeraldGreen : AURA_COLORS.redAlert,
+                }}
+              >
+                {isPasswordMatch ? 'Coinciden' : 'No coinciden'}
+              </Text>
+            </View>
+          )}
+        </View>
+
+        <View className="h-12 rounded-xl bg-gray-100 flex-row items-center px-3.5 border border-transparent">
+          <Ionicons
+            name="shield-checkmark-outline"
+            size={19}
+            color={AURA_COLORS.textMuted}
+            style={{ marginRight: 10 }}
+          />
+          <TextInput
+            value={confirmPassword}
+            onChangeText={(text) => {
+              setConfirmPassword(text);
+              if (errorMessage) setErrorMessage(null);
+            }}
+            placeholder="••••••••••••"
+            placeholderTextColor={AURA_COLORS.textMuted}
+            secureTextEntry={!showConfirmPassword}
+            autoCapitalize="none"
+            className="flex-1 text-sm font-semibold text-textDark tracking-widest py-0"
+          />
+          <TouchableOpacity
+            onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+            className="p-1"
+          >
+            <Ionicons
+              name={showConfirmPassword ? 'eye-off-outline' : 'eye-outline'}
+              size={20}
+              color={AURA_COLORS.textMutedDark}
+            />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Nota KYC Informativa */}

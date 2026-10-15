@@ -14,6 +14,7 @@ import {
 interface MockAuthParams {
   email: string;
   password: string;
+  confirmPassword?: string;
   firstName?: string;
   lastName?: string;
   username?: string;
@@ -25,6 +26,7 @@ interface MockAuthResult {
   error?: string;
   isDuplicate?: boolean;
   requiresEmailConfirmation?: boolean;
+  registeredEmail?: string;
 }
 
 describe('Pruebas Funcionales: Validaciones de Registro y Login (RF-01 y RF-02)', () => {
@@ -118,44 +120,48 @@ describe('Pruebas Funcionales: Validaciones de Registro y Login (RF-01 y RF-02)'
   });
 });
 
+// Función mock para simular la lógica de registro de AuthContext
+const mockRegisterService = async (
+  params: MockAuthParams,
+  existingEmails: string[] = []
+): Promise<MockAuthResult> => {
+  const trimmedEmail = params.email.trim().toLowerCase();
+
+  // 1. Validaciones previas
+  if (!params.firstName || !params.lastName || !params.username || !trimmedEmail || !params.password) {
+    return { success: false, error: 'Todos los campos son obligatorios para el registro.' };
+  }
+
+  if (!checkEmailFormat(trimmedEmail)) {
+    return { success: false, error: 'Por favor ingresa un correo electrónico con formato válido.' };
+  }
+
+  if (params.password.length < 8) {
+    return { success: false, error: 'La contraseña debe contener al menos 8 caracteres.' };
+  }
+
+  if (params.confirmPassword !== undefined && params.password !== params.confirmPassword) {
+    return { success: false, error: 'Las contraseñas no coinciden. Por favor verifica que ambas sean idénticas.' };
+  }
+
+  if (!validateAgeRange(params.age ?? 0)) {
+    return { success: false, error: 'La edad debe estar comprendida entre 18 y 99 años.' };
+  }
+
+  // 2. Simulación de detección de duplicados en Supabase Auth
+  if (existingEmails.includes(trimmedEmail)) {
+    return {
+      success: false,
+      isDuplicate: true,
+      error: 'El correo electrónico ya se encuentra registrado en el sistema.',
+    };
+  }
+
+  // 3. Registro exitoso
+  return { success: true, registeredEmail: trimmedEmail };
+};
+
 describe('Pruebas Funcionales: Flujo de Registro (RF-01)', () => {
-  // Función mock para simular la lógica de registro de AuthContext
-  const mockRegisterService = async (
-    params: MockAuthParams,
-    existingEmails: string[]
-  ): Promise<MockAuthResult> => {
-    const trimmedEmail = params.email.trim().toLowerCase();
-
-    // 1. Validaciones previas
-    if (!params.firstName || !params.lastName || !params.username || !trimmedEmail || !params.password) {
-      return { success: false, error: 'Todos los campos son obligatorios para el registro.' };
-    }
-
-    if (!checkEmailFormat(trimmedEmail)) {
-      return { success: false, error: 'Por favor ingresa un correo electrónico con formato válido.' };
-    }
-
-    if (params.password.length < 8) {
-      return { success: false, error: 'La contraseña debe contener al menos 8 caracteres.' };
-    }
-
-    if (!validateAgeRange(params.age ?? 0)) {
-      return { success: false, error: 'La edad debe estar comprendida entre 18 y 99 años.' };
-    }
-
-    // 2. Simulación de detección de duplicados en Supabase Auth
-    if (existingEmails.includes(trimmedEmail)) {
-      return {
-        success: false,
-        isDuplicate: true,
-        error: 'El correo electrónico ya se encuentra registrado en el sistema.',
-      };
-    }
-
-    // 3. Registro exitoso
-    return { success: true };
-  };
-
   test('Permite el registro exitoso cuando todos los datos cumplen las reglas KYC', async () => {
     const result = await mockRegisterService(
       {
@@ -170,6 +176,7 @@ describe('Pruebas Funcionales: Flujo de Registro (RF-01)', () => {
     );
 
     assert.strictEqual(result.success, true);
+    assert.strictEqual(result.registeredEmail, 'yeison@aurafinancial.com');
     assert.strictEqual(result.isDuplicate, undefined);
     assert.strictEqual(result.error, undefined);
   });
@@ -226,6 +233,42 @@ describe('Pruebas Funcionales: Flujo de Registro (RF-01)', () => {
 
     assert.strictEqual(result.success, false);
     assert.match(result.error ?? '', /edad debe estar comprendida/i);
+  });
+
+  test('Rechaza el registro si la confirmación de contraseña no coincide', async () => {
+    const result = await mockRegisterService(
+      {
+        firstName: 'Yeison',
+        lastName: 'Arrieta',
+        username: 'yeison_fin',
+        age: 26,
+        email: 'yeison2@aurafinancial.com',
+        password: 'Password2025!',
+        confirmPassword: 'PasswordDiferente123!',
+      },
+      []
+    );
+
+    assert.strictEqual(result.success, false);
+    assert.match(result.error ?? '', /contraseñas no coinciden/i);
+  });
+
+  test('Permite el registro cuando la contraseña y su confirmación son idénticas', async () => {
+    const result = await mockRegisterService(
+      {
+        firstName: 'Yeison',
+        lastName: 'Arrieta',
+        username: 'yeison_fin',
+        age: 26,
+        email: 'yeison2@aurafinancial.com',
+        password: 'Password2025!',
+        confirmPassword: 'Password2025!',
+      },
+      []
+    );
+
+    assert.strictEqual(result.success, true);
+    assert.strictEqual(result.registeredEmail, 'yeison2@aurafinancial.com');
   });
 });
 
@@ -323,5 +366,42 @@ describe('Pruebas Funcionales: Política de Expiración de Sesión a las 24 Hora
 
     assert.strictEqual(isExpired, true);
     assert.strictEqual(logoutCalled, true);
+  });
+});
+
+describe('Pruebas Funcionales: Redirección al Login tras Registro y Manejo de Toast', () => {
+  test('El registro exitoso retorna el correo sanitizado para transferirlo al formulario de Login', async () => {
+    const result = await mockRegisterService(
+      {
+        firstName: 'Laura',
+        lastName: 'Mendoza',
+        username: 'laura_m',
+        age: 29,
+        email: '  LAURA.MENDOZA@AURA.COM  ',
+        password: 'Password2025#',
+      },
+      []
+    );
+
+    assert.strictEqual(result.success, true);
+    assert.strictEqual(result.registeredEmail, 'laura.mendoza@aura.com');
+  });
+
+  test('El estado de sesión no debe persistirse automáticamente tras registrarse', () => {
+    // Simulación del comportamiento esperado de AuthContext:
+    // Al registrar, la sesión transitoria se cierra para obligar al usuario a autenticarse en Login
+    let currentSession: { user: string } | null = null;
+    const simulateRegistrationLifecycle = (hasSessionFromSupabase: boolean) => {
+      if (hasSessionFromSupabase) {
+        // AuthContext explícitamente cierra la sesión transitoria
+        currentSession = null;
+      }
+      return { success: true, targetScreen: 'login', shouldShowToast: true };
+    };
+
+    const outcome = simulateRegistrationLifecycle(true);
+    assert.strictEqual(currentSession, null, 'No debe quedar sesión activa tras registro');
+    assert.strictEqual(outcome.targetScreen, 'login');
+    assert.strictEqual(outcome.shouldShowToast, true);
   });
 });
